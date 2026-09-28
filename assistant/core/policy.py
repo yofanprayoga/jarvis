@@ -55,7 +55,26 @@ class PolicyEngine:
                     risk=Risk.FORBIDDEN,
                 )
 
-        # 4. Check L3 (CONFIRM)
+        # 4. Check protected filesystem paths for modifications (L0 FORBIDDEN)
+        if tool_def.risk in (Risk.CONFIRM, Risk.FORBIDDEN) or "edit" in tool_def.name or "delete" in tool_def.name:
+            target_path_str = str(args.get("file_path") or args.get("original_path") or args.get("target") or "").strip()
+            if target_path_str:
+                from pathlib import Path
+                try:
+                    resolved_target = str(Path(target_path_str).resolve()).lower()
+                    system_dirs = ["c:\\windows", "c:\\boot", "c:\\recovery", "c:\\program files\\windows"]
+                    for sdir in system_dirs:
+                        if resolved_target == sdir or resolved_target.startswith(sdir + "\\"):
+                            return PolicyDecision(
+                                allowed=False,
+                                reason=f"Target path '{target_path_str}' is inside protected Windows system directories (L0 FORBIDDEN).",
+                                needs_confirmation=False,
+                                risk=Risk.FORBIDDEN,
+                            )
+                except Exception:
+                    pass
+
+        # 5. Check L3 (CONFIRM)
         if tool_def.risk == Risk.CONFIRM:
             return PolicyDecision(
                 allowed=True,

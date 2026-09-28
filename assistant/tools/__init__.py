@@ -33,10 +33,18 @@ from assistant.tools.events.event_query import events_query, get_crash_summary
 # Phase 6 tools
 from assistant.tools.web.web_tools import web_search_tool, web_fetch_tool, pcgw_tool
 
-# Phase 7 tools
+# Phase 7 & 8 tools
 from assistant.tools.games.game_tools import list_installed_games, find_save_and_config
-from assistant.tools.files.file_tools import inspect_file_tool, read_text_tool, backup_file_tool
+from assistant.tools.files.file_tools import (
+    inspect_file_tool,
+    read_text_tool,
+    backup_file_tool,
+    propose_edit_tool,
+    apply_edit_tool,
+    restore_backup_tool,
+)
 from assistant.tools.apps.app_tools import resolve_app_tool, inspect_app_tool, get_cli_help_tool
+
 
 # Register all tools
 for tool_def in [
@@ -80,6 +88,10 @@ for tool_def in [
     resolve_app_tool,
     inspect_app_tool,
     get_cli_help_tool,
+    # Phase 8 Controlled Modifications (L1 / L3)
+    propose_edit_tool,
+    apply_edit_tool,
+    restore_backup_tool,
 ]:
     # Prevent duplicate registration if reloaded
     if registry.get(tool_def.name) is None:

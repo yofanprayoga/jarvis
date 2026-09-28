@@ -156,3 +156,117 @@ def backup_file_tool(args: FileBackupInput) -> ToolResult:
     )
 
     return ToolResult.success(data=manifest_data, summary=summary)
+
+
+class FileProposeEditInput(BaseModel):
+    file_path: str = Field(description="Full path to the text file to edit")
+    new_content: str = Field(description="Proposed new content of the file")
+    explanation: str = Field(default="", description="Explanation of what changes are being proposed and why")
+
+
+class FileApplyEditInput(BaseModel):
+    file_path: str = Field(description="Full path to the text file to edit")
+    new_content: str = Field(description="Approved new content to write to the file")
+    expected_hash: Optional[str] = Field(default=None, description="Expected SHA-256 before edit to guard against race conditions")
+    reason: str = Field(default="", description="Reason for applying the edit")
+
+
+class FileRestoreBackupInput(BaseModel):
+    backup_path: Optional[str] = Field(default=None, description="Path to the backup file to restore from")
+    original_path: Optional[str] = Field(default=None, description="Original file path to restore (if backup_path not specified, restores latest backup)")
+    manifest_path: Optional[str] = Field(default=None, description="Path to the backup manifest json file")
+
+
+@tool(
+    name="files.propose_edit",
+    risk=Risk.OBSERVE,
+    description="Propose an edit to a text configuration or settings file. Generates a unified diff and preview without writing any changes to disk.",
+    input_model=FileProposeEditInput,
+    timeout_s=10,
+    requires_elevation=False,
+)
+def propose_edit_tool(args: FileProposeEditInput) -> ToolResult:
+    from assistant.tools.files.edit import propose_file_edit
+    try:
+        proposal = propose_file_edit(
+            file_path=args.file_path,
+            new_content=args.new_content,
+            explanation=args.explanation,
+        )
+    except Exception as e:
+        return ToolResult.fail(f"Gagal membuat proposal edit: {e}")
+
+    diff_preview = proposal["diff"] if proposal["diff"] else "[Tidak ada perubahan konten terdeteksi]"
+    summary = (
+        f"Proposal Perubahan File: '{proposal['filename']}' ({proposal['proposal_id']})\n"
+        f"- Alasan: {proposal['explanation']}\n"
+        f"- Statistik: +{proposal['stats']['additions']} baris, -{proposal['stats']['deletions']} baris\n"
+        f"- SHA-256 Sebelum: {proposal['sha256_before'][:16]}...\n"
+        f"- SHA-256 Sesudah: {proposal['sha256_after'][:16]}...\n"
+        f"- Diff Preview:\n```diff\n{diff_preview}\n```"
+    )
+
+    return ToolResult.success(data=proposal, summary=summary)
+
+
+@tool(
+    name="files.apply_edit",
+    risk=Risk.CONFIRM,
+    description="Apply an approved edit to a text configuration file. Requires existing file, automatically creates an intact backup first, atomically writes changes, and verifies hash. (L3 - Requires User Confirmation)",
+    input_model=FileApplyEditInput,
+    timeout_s=15,
+    requires_elevation=False,
+)
+def apply_edit_tool(args: FileApplyEditInput) -> ToolResult:
+    from assistant.tools.files.edit import apply_file_edit
+    try:
+        result = apply_file_edit(
+            file_path=args.file_path,
+            new_content=args.new_content,
+            expected_hash=args.expected_hash,
+            reason=args.reason,
+        )
+    except Exception as e:
+        return ToolResult.fail(f"Gagal menerapkan edit: {e}")
+
+    summary = (
+        f"Perubahan File Berhasil Diterapkan & Diverifikasi:\n"
+        f"- Target: {result['filename']}\n"
+        f"- Backup Tersimpan: {result['backup_path']}\n"
+        f"- SHA-256 Sebelum: {result['sha256_before'][:16]}...\n"
+        f"- SHA-256 Sesudah: {result['sha256_after'][:16]}... (Terverifikasi)\n"
+        f"- Perintah Rollback: {result['rollback_command']}"
+    )
+
+    return ToolResult.success(data=result, summary=summary)
+
+
+@tool(
+    name="files.restore_backup",
+    risk=Risk.CONFIRM,
+    description="Restore a file from a verified backup in data/backups/. Restores byte-for-byte and verifies SHA-256 match. (L3 - Requires User Confirmation)",
+    input_model=FileRestoreBackupInput,
+    timeout_s=15,
+    requires_elevation=False,
+)
+def restore_backup_tool(args: FileRestoreBackupInput) -> ToolResult:
+    from assistant.tools.files.edit import restore_file_backup
+    try:
+        result = restore_file_backup(
+            backup_path=args.backup_path,
+            original_path=args.original_path,
+            manifest_path=args.manifest_path,
+        )
+    except Exception as e:
+        return ToolResult.fail(f"Gagal memulihkan file dari backup: {e}")
+
+    summary = (
+        f"File Berhasil Dipulihkan dari Backup:\n"
+        f"- File Target: {result['restored_path']}\n"
+        f"- Sumber Backup: {result['backup_path']}\n"
+        f"- SHA-256: {result['sha256'][:16]}... (Byte-Identical Terverifikasi)\n"
+        f"- Waktu Pemulihan: {result['timestamp']}"
+    )
+
+    return ToolResult.success(data=result, summary=summary)
+

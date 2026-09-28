@@ -36,8 +36,14 @@ Activate the local environment and run tools, UI, or playbooks:
 # Buka jendela Chat Window langsung (Dark mode Tkinter)
 .\.venv\Scripts\python.exe -m assistant chat
 
-# List all 35 registered tools
+# List all 38 registered tools
 .\.venv\Scripts\python.exe -m assistant list
+
+# Controlled File Modifications (Phase 8 - L3 Safe Edits, Diffs, Backups & Rollback)
+.\.venv\Scripts\python.exe -m assistant tool files.propose_edit file_path="config/settings.yaml" new_content="name: JarvisPRO\n" explanation="Ubah nama assistant"
+.\.venv\Scripts\python.exe -m assistant tool files.backup file_path="config/settings.yaml"
+.\.venv\Scripts\python.exe -m assistant tool files.apply_edit file_path="config/settings.yaml" new_content="name: Jarvis\n" reason="Kembalikan setting"
+.\.venv\Scripts\python.exe -m assistant tool files.restore_backup original_path="config/settings.yaml"
 
 # Game Discovery & Save/Config Inspector Tools
 .\.venv\Scripts\python.exe -m assistant tool games.list_installed
@@ -78,7 +84,7 @@ Activate the local environment and run tools, UI, or playbooks:
 
 ## Running Tests & Benchmark Evaluation
 ```powershell
-# Run unit tests (69 tests)
+# Run unit tests (78 tests)
 .\.venv\Scripts\python.exe -m unittest discover tests
 
 # Run benchmark evaluation suite (30 test prompts, route & target accuracy)

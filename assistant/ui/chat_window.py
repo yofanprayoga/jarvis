@@ -43,6 +43,7 @@ class ChatWindow:
         self.cancel_event = threading.Event()
         self.last_result: Optional[dict[str, Any]] = None
         self.last_query: str = ""
+        self._is_recording_voice: bool = False
 
         # Initialize root window
         self.root = tk.Tk()
@@ -257,6 +258,22 @@ class ChatWindow:
         )
         self.btn_send.pack(side=tk.LEFT, padx=(0, 4))
 
+        self.btn_voice = tk.Button(
+            input_frame,
+            text="🎤 Suara",
+            command=self.on_voice_clicked,
+            bg=self.THEME["bg_card"],
+            fg=self.THEME["accent_peach"],
+            activebackground=self.THEME["accent_peach"],
+            activeforeground=self.THEME["bg_dark"],
+            font=("Segoe UI", 10, "bold"),
+            padx=12,
+            pady=4,
+            relief=tk.FLAT,
+            cursor="hand2",
+        )
+        self.btn_voice.pack(side=tk.LEFT, padx=(0, 4))
+
         self.btn_cancel = tk.Button(
             input_frame,
             text="Batal",
@@ -331,7 +348,81 @@ class ChatWindow:
         )
         worker_thread.start()
 
+    def on_voice_clicked(self) -> None:
+        """Handle push-to-talk voice recording toggle in the chat UI."""
+        from assistant.voice.voice_controller import voice_controller
+
+        if not self._is_recording_voice:
+            try:
+                voice_controller.start_push_to_talk()
+                self._is_recording_voice = True
+                self.btn_voice.configure(
+                    text="⏹ Selesai",
+                    bg=self.THEME["accent_red"],
+                    fg=self.THEME["bg_dark"],
+                )
+                self.update_status("Merekam suara... klik 'Selesai' jika sudah.", is_working=True)
+            except Exception as e:
+                self.update_status(f"Gagal microphone: {e}", is_working=False)
+                self.append_message("System", f"Microphone error: {e}", tag="system")
+        else:
+            self.btn_voice.configure(
+                text="⏳ Memproses...",
+                state="disabled",
+            )
+            self.update_status("Memproses transkripsi suara lokal...", is_working=True)
+
+            def _transcribe_worker():
+                try:
+                    ok, transcript, stt_res = voice_controller.stop_and_transcribe()
+                    self._is_recording_voice = False
+
+                    def _update_ui():
+                        self.btn_voice.configure(
+                            text="🎤 Suara",
+                            bg=self.THEME["bg_card"],
+                            fg=self.THEME["accent_peach"],
+                            state="normal",
+                        )
+                        if ok and transcript:
+                            self.input_entry.delete(0, tk.END)
+                            self.input_entry.insert(0, transcript)
+                            self.update_status(f"Suara ditranskripsi: '{transcript}'", is_working=False)
+                            self.on_send_clicked()
+                        else:
+                            self.update_status(transcript, is_working=False)
+                            self.append_message("System", transcript, tag="system")
+
+                    self.root.after(0, _update_ui)
+                except Exception as ex:
+                    self._is_recording_voice = False
+                    def _err_ui():
+                        self.btn_voice.configure(
+                            text="🎤 Suara",
+                            bg=self.THEME["bg_card"],
+                            fg=self.THEME["accent_peach"],
+                            state="normal",
+                        )
+                        self.update_status(f"Error suara: {ex}", is_working=False)
+                    self.root.after(0, _err_ui)
+
+            threading.Thread(target=_transcribe_worker, daemon=True).start()
+
     def on_cancel_clicked(self) -> None:
+        if self._is_recording_voice:
+            from assistant.voice.voice_controller import voice_controller
+            voice_controller.cancel()
+            self._is_recording_voice = False
+            self.btn_voice.configure(
+                text="🎤 Suara",
+                bg=self.THEME["bg_card"],
+                fg=self.THEME["accent_peach"],
+                state="normal",
+            )
+            self.update_status("Perekaman suara dibatalkan.", is_working=False)
+            self.append_message("System", "Perekaman suara dibatalkan oleh pengguna.", tag="system")
+            return
+
         if self._is_working:
             self.cancel_event.set()
             self.update_status("Membatalkan operasi...", is_working=False)

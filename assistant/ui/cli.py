@@ -149,6 +149,51 @@ def cmd_ask(args: argparse.Namespace) -> None:
         print("-" * 60)
 
 
+def cmd_voice(args: argparse.Namespace) -> None:
+    """Execute a voice input command (Microphone -> local STT -> Orchestrator)."""
+    from assistant.voice.voice_controller import voice_controller
+
+    duration = getattr(args, "duration", 4.0) or 4.0
+    language = getattr(args, "language", "id") or "id"
+    dry_run = getattr(args, "dry_run", False)
+    device_id = getattr(args, "device", 0) or 0
+
+    print("\n" + "=" * 60)
+    print("JARVIS VOICE INPUT (Microphone -> Local STT)")
+    print("=" * 60)
+    print(f"Merekam selama {duration:.1f} detik dari microphone (bahasa: {language})...")
+    print("Silakan bicara sekarang...")
+
+    res = voice_controller.listen_and_execute(
+        duration_s=duration,
+        language=language,
+        dry_run=dry_run,
+        device_id=device_id,
+    )
+
+    if not res.ok:
+        print(f"\n[ERROR] Gagal memproses suara ({res.status}): {res.error}", file=sys.stderr)
+        if not getattr(args, "_in_repl", False):
+            sys.exit(1)
+        return
+
+    print(f"\n[TRANSKRIPSI] \"{res.transcript}\" ({res.stt_duration_ms:.1f} ms, bahasa={res.language})")
+
+    if dry_run:
+        print("[DRY RUN] Perintah tidak dieksekusi ke Orchestrator.")
+        return
+
+    orch_res = res.orchestrator_result or {}
+    route = orch_res.get("route", "unknown")
+    if route == "fast":
+        print(f"\n[FAST PATH: {orch_res.get('intent')}] {orch_res.get('response')}")
+    else:
+        print(f"\n[ANALYSIS: {orch_res.get('type', 'response').upper()}]")
+        if orch_res.get("playbook"):
+            print(f"Playbook: {orch_res.get('playbook')}")
+        print(orch_res.get("response"))
+
+
 def cmd_audit(args: argparse.Namespace) -> None:
     """Display recent audit logs."""
     logs = audit_logger.get_recent(limit=args.limit)
@@ -198,6 +243,9 @@ def cmd_repl() -> None:
         if line.lower().startswith("audit"):
             cmd_audit(argparse.Namespace(limit=15))
             continue
+        if line.lower() in ("voice", "v"):
+            cmd_voice(argparse.Namespace(duration=4.0, language="id", dry_run=False, device=0, _in_repl=True))
+            continue
         if line.lower() == "help":
             print(
                 "Perintah Alami (Fast Path):\n"
@@ -206,6 +254,7 @@ def cmd_repl() -> None:
                 "  cari <topik> di google\n"
                 "  update <alias> <url>\n\n"
                 "Perintah Tool Langsung:\n"
+                "  voice / v            - Rekam perintah suara lewat microphone\n"
                 "  list                 - Daftar tool terdaftar\n"
                 "  audit                - Lihat log audit SQLite\n"
                 "  system.get_overview  - Jalankan tool langsung\n"
@@ -253,6 +302,13 @@ def main() -> None:
     ask_parser = subparsers.add_parser("ask", help="Send a natural language command")
     ask_parser.add_argument("text", nargs="+", help="Natural language query")
 
+    # 'voice' command
+    voice_parser = subparsers.add_parser("voice", help="Record speech and execute as natural language command")
+    voice_parser.add_argument("--duration", type=float, default=4.0, help="Recording duration in seconds (default: 4.0)")
+    voice_parser.add_argument("--language", default="id", help="Language code (id, en, or auto)")
+    voice_parser.add_argument("--dry-run", action="store_true", help="Only transcribe speech without executing")
+    voice_parser.add_argument("--device", type=int, default=0, help="Microphone device ID (default: 0)")
+
     # 'playbook' command
     playbook_parser = subparsers.add_parser("playbook", help="Execute or list diagnostic playbooks")
     playbook_parser.add_argument("name", nargs="?", default="list", help="Playbook name to execute (or 'list')")
@@ -286,6 +342,8 @@ def main() -> None:
         cmd_list(args)
     elif args.command == "ask":
         cmd_ask(args)
+    elif args.command == "voice":
+        cmd_voice(args)
     elif args.command == "playbook":
         cmd_playbook(args)
     elif args.command == "tool":
@@ -305,3 +363,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

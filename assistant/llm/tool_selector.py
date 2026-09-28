@@ -43,6 +43,27 @@ class ToolSelector:
         "pcgamingwiki": ["web.pcgamingwiki"],
         "save": ["web.pcgamingwiki"],
         "config": ["web.pcgamingwiki"],
+        # Desktop GUI & Window Automation keywords (Phase 9/10)
+        "window": ["window.activate", "window.close", "ui.inspect_window", "ui.inspect_tree"],
+        "tutup": ["window.close"],
+        "close": ["window.close"],
+        "aktifkan": ["window.activate"],
+        "activate": ["window.activate"],
+        "fokus": ["ui.focus", "window.activate"],
+        "focus": ["ui.focus", "window.activate"],
+        "klik": ["ui.invoke", "ui.click_at"],
+        "click": ["ui.invoke", "ui.click_at"],
+        "tekan": ["ui.invoke", "ui.send_keys"],
+        "ketik": ["ui.set_value", "ui.type_text"],
+        "type": ["ui.set_value", "ui.type_text"],
+        "tulis": ["ui.set_value", "ui.type_text"],
+        "toggle": ["ui.toggle"],
+        "centang": ["ui.toggle"],
+        "inspeksi": ["ui.inspect_tree", "ui.find_control", "ui.inspect_window"],
+        "inspect": ["ui.inspect_tree", "ui.find_control", "ui.inspect_window"],
+        "screen": ["screen.capture", "screen.ocr"],
+        "layar": ["screen.capture", "screen.ocr"],
+        "ocr": ["screen.ocr"],
     }
 
     # Core default subset when query is generic

@@ -77,6 +77,7 @@ class IntentRouter:
             "{folder}": r"(?P<folder>.+?)",
             "{app}": r"(?P<app>.+?)",
             "{query}": r"(?P<query>.+)",
+            "{title}": r"(?P<title>.+)",
         }
         
         # Build regex

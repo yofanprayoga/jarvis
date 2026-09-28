@@ -84,3 +84,25 @@
   tool: launch.web_search
   args:
     query: "{query}"
+
+- intent: close_window
+  patterns:
+    - "tutup window {title}"
+    - "tutup aplikasi {title}"
+    - "tutup app {title}"
+    - "close window {title}"
+    - "close app {title}"
+  tool: window.close
+  args:
+    title: "{title}"
+
+- intent: activate_window
+  patterns:
+    - "aktifkan window {title}"
+    - "fokus window {title}"
+    - "activate window {title}"
+    - "focus window {title}"
+  tool: window.activate
+  args:
+    title: "{title}"
+

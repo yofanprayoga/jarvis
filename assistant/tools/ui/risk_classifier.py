@@ -155,9 +155,15 @@ def _match_any_keyword(text: str, keywords: list[str]) -> Optional[str]:
     norm_space = re.sub(r"[_\-\s]+", " ", text_lower)
     norm_nospace = re.sub(r"[_\-\s]+", "", text_lower)
     for kw in keywords:
-        kw_space = re.sub(r"[_\-\s]+", " ", kw.lower().strip())
-        kw_nospace = re.sub(r"[_\-\s]+", "", kw.lower().strip())
-        if kw_space in norm_space or kw_nospace in norm_nospace:
+        kw_lower = kw.lower().strip()
+        # For short whole-word keywords (<= 4 chars like pin, otp, cvv, pwd), require word boundaries
+        if len(kw_lower) <= 4 and not any(kw_lower.endswith(c) for c in ("-", "_", "=")):
+            if re.search(r"\b" + re.escape(kw_lower) + r"\b", norm_space):
+                return kw
+            continue
+        kw_space = re.sub(r"[_\-\s]+", " ", kw_lower)
+        kw_nospace = re.sub(r"[_\-\s]+", "", kw_lower)
+        if kw_space in norm_space or kw_nospace in norm_nospace or kw_lower in text_lower:
             return kw
     return None
 

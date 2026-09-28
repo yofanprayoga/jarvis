@@ -45,6 +45,9 @@ from assistant.tools.files.file_tools import (
 )
 from assistant.tools.apps.app_tools import resolve_app_tool, inspect_app_tool, get_cli_help_tool
 
+# Phase 9A tools
+from assistant.tools.screen.screen_tools import capture_screen_tool, ocr_screen_tool, inspect_window_tool
+
 
 # Register all tools
 for tool_def in [
@@ -92,6 +95,10 @@ for tool_def in [
     propose_edit_tool,
     apply_edit_tool,
     restore_backup_tool,
+    # Phase 9A Screen Reading & Local OCR (L1)
+    inspect_window_tool,
+    capture_screen_tool,
+    ocr_screen_tool,
 ]:
     # Prevent duplicate registration if reloaded
     if registry.get(tool_def.name) is None:

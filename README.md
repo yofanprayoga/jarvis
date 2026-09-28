@@ -19,9 +19,10 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 - [x] **Phase 4:** Diagnostics Playbooks (BSOD, Crashes, Disk 100%) (Completed)
 - [x] **Phase 5:** Tray UI & Background Mode (Completed)
 - [x] **Phase 6:** Web Research Pipeline (Completed)
-- [ ] **Phase 7:** Game & App Investigation
-- [ ] **Phase 8:** Controlled Modifications (L3 Safe Edits)
-- [ ] **Phase 9:** Browser Automation & Screen Reading
+- [x] **Phase 7:** Game & App Investigation (Completed)
+- [x] **Phase 8:** Controlled Modifications (L3 Safe Edits) (Completed)
+- [x] **Phase 9A:** Screen Reading & Local OCR (Completed)
+- [ ] **Phase 9B–D:** Browser Automation (Not Started)
 - [ ] **Phase 10:** Desktop GUI Interaction
 - [ ] **Phase 11:** Voice (Mic standby / Push-to-Talk + Piper TTS)
 - [ ] **Phase 12:** Cloud LLM & Extensions
@@ -36,7 +37,7 @@ Activate the local environment and run tools, UI, or playbooks:
 # Buka jendela Chat Window langsung (Dark mode Tkinter)
 .\.venv\Scripts\python.exe -m assistant chat
 
-# List all 38 registered tools
+# List all 41 registered tools
 .\.venv\Scripts\python.exe -m assistant list
 
 # Controlled File Modifications (Phase 8 - L3 Safe Edits, Diffs, Backups & Rollback)
@@ -49,6 +50,12 @@ Activate the local environment and run tools, UI, or playbooks:
 .\.venv\Scripts\python.exe -m assistant tool games.list_installed
 .\.venv\Scripts\python.exe -m assistant tool games.find_save_and_config game_name="Cyberpunk 2077"
 .\.venv\Scripts\python.exe -m assistant tool apps.resolve name="notepad"
+
+# Screen Reading & Offline Local OCR (Phase 9A - Win32 + Windows.Media.Ocr)
+.\.venv\Scripts\python.exe -m assistant tool ui.inspect_window
+.\.venv\Scripts\python.exe -m assistant tool screen.capture
+.\.venv\Scripts\python.exe -m assistant tool screen.capture target="active_window"
+.\.venv\Scripts\python.exe -m assistant tool screen.ocr
 
 # Web Research & PCGamingWiki Tools
 .\.venv\Scripts\python.exe -m assistant tool web.search query="0x116 VIDEO_TDR_FAILURE" max_results=3
@@ -84,7 +91,7 @@ Activate the local environment and run tools, UI, or playbooks:
 
 ## Running Tests & Benchmark Evaluation
 ```powershell
-# Run unit tests (78 tests)
+# Run unit tests (86 tests)
 .\.venv\Scripts\python.exe -m unittest discover tests
 
 # Run benchmark evaluation suite (30 test prompts, route & target accuracy)

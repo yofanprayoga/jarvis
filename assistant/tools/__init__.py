@@ -14,8 +14,14 @@ from assistant.tools.system.startup import list_startup_items
 from assistant.tools.system.services import list_services
 from assistant.tools.process.top import list_top_processes
 
-# Register all Phase 1 tools
+# Phase 2 tools
+from assistant.tools.launch.browser import open_url, web_search, youtube_search, update_site_alias
+from assistant.tools.launch.app_launcher import open_app
+from assistant.tools.launch.folder_launcher import open_folder
+
+# Register all tools
 for tool_def in [
+    # System observation (L1)
     get_overview,
     get_cpu,
     get_memory,
@@ -26,8 +32,17 @@ for tool_def in [
     get_drivers,
     list_startup_items,
     list_services,
+    # Fast path launching (L2)
+    open_url,
+    web_search,
+    youtube_search,
+    update_site_alias,
+    open_app,
+    open_folder,
 ]:
-    registry.register(tool_def)
+    # Prevent duplicate registration if reloaded
+    if registry.get(tool_def.name) is None:
+        registry.register(tool_def)
 
 __all__ = [
     "registry",

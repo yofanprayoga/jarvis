@@ -14,7 +14,7 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 
 - [x] **Phase 0:** Master Design & Concept
 - [x] **Phase 1:** Foundation & Read-only System Tools (Completed)
-- [ ] **Phase 2:** Fast Path (Intent Router)
+- [x] **Phase 2:** Fast Path & Intent Router (Completed)
 - [ ] **Phase 3:** Local LLM Integration
 - [ ] **Phase 4:** Diagnostics Playbooks (BSOD, Crashes, Disk 100%)
 - [ ] **Phase 5:** Tray UI & Background Mode
@@ -39,6 +39,13 @@ Activate the local environment and run tools:
 .\.venv\Scripts\python.exe -m assistant tool system.get_memory
 .\.venv\Scripts\python.exe -m assistant tool system.get_disks
 .\.venv\Scripts\python.exe -m assistant tool process.list_top by=memory count=5
+
+# Fast Path (Jalur Cepat < 1 detik)
+.\.venv\Scripts\python.exe -m assistant ask "buka kuramanime"
+.\.venv\Scripts\python.exe -m assistant ask "buka web idlix dong"
+.\.venv\Scripts\python.exe -m assistant ask "cari lofi di youtube"
+.\.venv\Scripts\python.exe -m assistant ask "buka folder download"
+.\.venv\Scripts\python.exe -m assistant ask "update kuramanime https://v21.kuramanime.ing/"
 
 # View recent SQLite audit logs
 .\.venv\Scripts\python.exe -m assistant audit --limit 10

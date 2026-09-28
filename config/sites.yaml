@@ -1,0 +1,19 @@
+# Known Website Aliases (Seed)
+# User can dynamically learn/update these at runtime
+
+youtube: "https://www.youtube.com"
+yt: "https://www.youtube.com"
+google: "https://www.google.com"
+kuramanime: "https://v20.kuramanime.ing/"
+kurama: "https://v20.kuramanime.ing/"
+idlix: "https://z2.idlixku.com/"
+tokopedia: "https://www.tokopedia.com"
+toped: "https://www.tokopedia.com"
+shopee: "https://www.shopee.co.id"
+github: "https://www.github.com"
+gmail: "https://mail.google.com"
+pcgamingwiki: "https://www.pcgamingwiki.com"
+chatgpt: "https://chatgpt.com"
+gemini: "https://gemini.google.com"
+netflix: "https://www.netflix.com"
+spotify: "https://open.spotify.com"

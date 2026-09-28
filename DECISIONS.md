@@ -14,3 +14,7 @@ This log records architecture and design decisions, changes, and their rationale
 | 2026-09-28 | Explicit connection closing on SQLite audit logger | Solves Windows WinError 32 file locking during tests and background access. |
 | 2026-09-28 | Fixed PowerShell JSON query templates (`ConvertTo-Json`) | Eliminates fragile regex text scraping and guarantees structured data for all WMI/CIM/Counter queries. |
 | 2026-09-28 | 1500-character ceiling on `ToolResult.summary` | Protects limited context window and prompt-processing latency on CPU-only 3B–4B LLMs. |
+| 2026-09-28 | Phase 2 completed: Fast-Path Intent Router & Launch Tools | Ultra-fast (<100ms) execution for opening URLs, searching YouTube/Google, launching apps, and opening folders without LLM overhead. |
+| 2026-09-28 | Dual-tier Site Manager (YAML seed + SQLite dynamic learning) | Solves changing mirror domains (e.g., Kuramanime, Idlix) by allowing dynamic updates saved into local SQLite. |
+| 2026-09-28 | Conversational filler word normalization | Robust pattern matching for natural Indonesian/English commands (tolong, dong, coba, please) while preserving URL dots. |
+| 2026-09-28 | Start Menu and App Paths indexing | Discovers installed user applications via `.lnk` files without hardcoding absolute paths. |

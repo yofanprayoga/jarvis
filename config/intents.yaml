@@ -1,0 +1,84 @@
+# Fast-Path Intent Rules (Section 9)
+# Normalization strips filler words: tolong, dong, coba, please, bantu, dll.
+
+- intent: youtube_search
+  patterns:
+    - "cari {query} di youtube"
+    - "putar {query} di youtube"
+    - "setel {query} di youtube"
+    - "youtube {query}"
+    - "search {query} on youtube"
+    - "play {query} on youtube"
+    - "cari video {query}"
+  tool: launch.youtube_search
+  args:
+    query: "{query}"
+
+- intent: update_site_alias
+  patterns:
+    - "update {site} {url}"
+    - "ubah {site} ke {url}"
+    - "ganti {site} ke {url}"
+    - "simpan web {site} {url}"
+    - "ingat web {site} {url}"
+    - "remember site {site} {url}"
+  tool: launch.update_site
+  args:
+    alias: "{site}"
+    url: "{url}"
+
+- intent: open_site
+  patterns:
+    - "buka web {site}"
+    - "buka situs {site}"
+    - "buka website {site}"
+    - "open website {site}"
+    - "open web {site}"
+    - "buka {site}"
+    - "open {site}"
+  resolve:
+    site: "sites"  # Must match a known site alias in sites.yaml or dynamic_sites
+  tool: launch.open_url
+  args:
+    url: "{site}"
+
+- intent: open_folder
+  patterns:
+    - "buka folder {folder}"
+    - "buka direktori {folder}"
+    - "open folder {folder}"
+    - "open {folder} folder"
+    - "folder {folder}"
+  tool: launch.open_folder
+  args:
+    folder: "{folder}"
+
+- intent: open_app
+  patterns:
+    - "buka aplikasi {app}"
+    - "buka app {app}"
+    - "jalankan aplikasi {app}"
+    - "jalankan {app}"
+    - "open application {app}"
+    - "open app {app}"
+    - "launch {app}"
+    - "buka {app}"
+    - "open {app}"
+  resolve:
+    app: "apps"   # Must match an app alias or Start Menu index
+  tool: launch.open_app
+  args:
+    name: "{app}"
+
+- intent: web_search
+  patterns:
+    - "cari {query} di google"
+    - "cari di google {query}"
+    - "googling {query}"
+    - "google {query}"
+    - "cari {query}"
+    - "search for {query}"
+    - "search {query}"
+  tool: launch.web_search
+  args:
+    query: "{query}"

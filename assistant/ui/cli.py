@@ -9,6 +9,7 @@ from typing import Any
 import assistant.tools  # ensure all tools are registered
 from assistant.core.audit import audit_logger
 from assistant.core.orchestrator import orchestrator
+from assistant.core.router import intent_router
 from assistant.tools.registry import registry
 
 
@@ -79,6 +80,24 @@ def cmd_tool(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
+def cmd_ask(args: argparse.Namespace) -> None:
+    """Handle natural language command via the Fast-Path Intent Router."""
+    query = " ".join(args.text).strip()
+    if not query:
+        print("[ERROR] Masukkan perintah. Contoh: assistant ask 'buka youtube'", file=sys.stderr)
+        sys.exit(1)
+
+    route_res = intent_router.route(query)
+    if route_res.matched:
+        print(f"\n[FAST PATH: {route_res.intent}]")
+        print(f"Tool: {route_res.tool_name}")
+        print("-" * 60)
+        print(route_res.message)
+        print("-" * 60)
+    else:
+        print(f"\n[UNMATCHED] {route_res.message}")
+
+
 def cmd_audit(args: argparse.Namespace) -> None:
     """Display recent audit logs."""
     logs = audit_logger.get_recent(limit=args.limit)
@@ -103,10 +122,11 @@ def cmd_audit(args: argparse.Namespace) -> None:
 
 
 def cmd_repl() -> None:
-    """Interactive command shell."""
+    """Interactive command shell with Fast-Path Router support."""
     print("=" * 65)
-    print(" Jarvis-lite CLI Shell (Phase 1)")
-    print(" Type 'help' for commands, 'list' for tools, 'exit' to quit.")
+    print(" Jarvis-lite CLI Shell (Phase 1 & 2)")
+    print(" Ketik perintah biasa (misal 'buka youtube', 'cari lofi di youtube')")
+    print(" Perintah sistem: 'list', 'audit', 'help', 'exit'")
     print("=" * 65)
 
     while True:
@@ -118,28 +138,47 @@ def cmd_repl() -> None:
 
         if not line:
             continue
-        if line in ("exit", "quit", "q"):
+        if line.lower() in ("exit", "quit", "q"):
             print("Goodbye!")
             break
-        if line == "list":
+        if line.lower() == "list":
             cmd_list(argparse.Namespace())
             continue
-        if line.startswith("audit"):
+        if line.lower().startswith("audit"):
             cmd_audit(argparse.Namespace(limit=15))
             continue
-        if line == "help":
-            print("Commands:\n  list              - List tools\n  audit             - View audit log\n  <tool> [key=val]  - Run tool (e.g. 'system.get_overview')\n  exit              - Quit")
+        if line.lower() == "help":
+            print(
+                "Perintah Alami (Fast Path):\n"
+                "  buka <youtube|kuramanime|idlix|google|chrome|folder>\n"
+                "  cari <judul> di youtube\n"
+                "  cari <topik> di google\n"
+                "  update <alias> <url>\n\n"
+                "Perintah Tool Langsung:\n"
+                "  list                 - Daftar tool terdaftar\n"
+                "  audit                - Lihat log audit SQLite\n"
+                "  system.get_overview  - Jalankan tool langsung\n"
+                "  exit                 - Keluar"
+            )
             continue
 
-        # Treat as tool execution
+        # Check if first word is a direct tool name
         parts = line.split()
-        tool_name = parts[0]
-        params = parse_kwarg_pairs(parts[1:])
-        res = orchestrator.run_tool(tool_name, params)
-        if res.ok:
-            print(f"\n[OK] {res.summary}")
+        if registry.get(parts[0]):
+            params = parse_kwarg_pairs(parts[1:])
+            res = orchestrator.run_tool(parts[0], params)
+            if res.ok:
+                print(f"\n[OK] {res.summary}")
+            else:
+                print(f"\n[ERROR] {res.error}")
+            continue
+
+        # Otherwise, process through Fast-Path Intent Router
+        route_res = intent_router.route(line)
+        if route_res.matched:
+            print(f"\n[FAST PATH: {route_res.intent}] {route_res.message}")
         else:
-            print(f"\n[ERROR] {res.error}")
+            print(f"\n[INFO] {route_res.message}")
 
 
 def main() -> None:
@@ -148,6 +187,10 @@ def main() -> None:
 
     # 'list' command
     subparsers.add_parser("list", help="List registered tools")
+
+    # 'ask' command
+    ask_parser = subparsers.add_parser("ask", help="Send a natural language command")
+    ask_parser.add_argument("text", nargs="+", help="Natural language query")
 
     # 'tool' command
     tool_parser = subparsers.add_parser("tool", help="Execute a specific tool")
@@ -167,6 +210,8 @@ def main() -> None:
 
     if args.command == "list":
         cmd_list(args)
+    elif args.command == "ask":
+        cmd_ask(args)
     elif args.command == "tool":
         cmd_tool(args)
     elif args.command == "audit":

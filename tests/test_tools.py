@@ -25,8 +25,17 @@ class TestPhase1Tools(unittest.TestCase):
             self.assertIn(name, tool_names)
 
     def test_all_phase1_tools_are_observe_risk(self):
+        phase1_tools = {
+            "system.get_overview", "system.get_cpu", "system.get_memory",
+            "system.get_disks", "system.get_disk_activity", "process.list_top",
+            "system.get_gpu_info", "system.get_drivers", "startup.list_items",
+            "services.list",
+        }
         for tool_def in registry.list_tools():
-            self.assertEqual(tool_def.risk, Risk.OBSERVE, f"Tool {tool_def.name} must be OBSERVE in Phase 1")
+            if tool_def.name in phase1_tools:
+                self.assertEqual(tool_def.risk, Risk.OBSERVE, f"Tool {tool_def.name} must be OBSERVE in Phase 1")
+            elif tool_def.name.startswith("launch."):
+                self.assertEqual(tool_def.risk, Risk.LOW_ACTION, f"Tool {tool_def.name} must be LOW_ACTION in Phase 2")
 
     def test_system_get_overview(self):
         res = registry.execute("system.get_overview")

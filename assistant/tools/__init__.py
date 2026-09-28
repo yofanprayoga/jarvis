@@ -73,6 +73,15 @@ from assistant.tools.ui.interaction_tools import (
     toggle_tool,
 )
 
+# Phase 10C tools
+from assistant.tools.ui.fallback_tools import (
+    activate_window_tool,
+    close_window_tool,
+    click_at_tool,
+    send_keys_tool,
+    type_text_tool,
+)
+
 
 # Register all tools
 for tool_def in [
@@ -140,6 +149,12 @@ for tool_def in [
     invoke_tool,
     set_value_tool,
     toggle_tool,
+    # Phase 10C Window Management & SendInput Fallback (L2 / L3)
+    activate_window_tool,
+    close_window_tool,
+    click_at_tool,
+    send_keys_tool,
+    type_text_tool,
 ]:
     # Prevent duplicate registration if reloaded
     if registry.get(tool_def.name) is None:

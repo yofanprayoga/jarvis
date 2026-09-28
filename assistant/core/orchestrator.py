@@ -114,6 +114,12 @@ class Orchestrator:
                 )
                 return ToolResult.fail(rejection_msg)
             audit_decision = "CONFIRMED_AND_ALLOWED"
+            input_model = tool_def.input_model
+            fields = getattr(input_model, "model_fields", None)
+            if fields is None:
+                fields = getattr(input_model, "__fields__", {})
+            if "confirmed" in fields:
+                args["confirmed"] = True
         else:
             audit_decision = "ALLOWED"
 

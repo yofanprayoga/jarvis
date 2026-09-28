@@ -70,7 +70,7 @@ class AuditLogger:
             k_lower = k.lower()
             if any(s in k_lower for s in ("password", "passwd", "token", "secret", "credential", "pin", "cvv", "api_key", "apikey")):
                 clean_args[k] = "[REDACTED]"
-            elif tool_name == "ui.set_value" and k == "value":
+            elif (tool_name == "ui.set_value" and k == "value") or (tool_name == "ui.type_text" and k == "text"):
                 clean_args[k] = f"[{len(str(v))} chars redacted]"
             else:
                 clean_args[k] = v

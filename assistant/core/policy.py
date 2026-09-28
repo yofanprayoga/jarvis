@@ -119,8 +119,12 @@ class PolicyEngine:
                         risk=Risk.CONFIRM,
                     )
 
-        # 6. Check UI Automation actions dynamic risk (Phase 10B)
-        if tool_def.name in ("ui.focus", "ui.invoke", "ui.set_value", "ui.toggle"):
+        # 6. Check UI Automation and Window Management actions dynamic risk (Phase 10B/10C)
+        if tool_def.name in (
+            "ui.focus", "ui.invoke", "ui.set_value", "ui.toggle",
+            "window.activate", "window.close",
+            "ui.click_at", "ui.send_keys", "ui.type_text",
+        ):
             from assistant.tools.ui.risk_classifier import classify_ui_action_from_args
             u_risk, u_reason = classify_ui_action_from_args(tool_def.name, args)
             if u_risk == Risk.FORBIDDEN:

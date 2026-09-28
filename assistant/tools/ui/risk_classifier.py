@@ -285,7 +285,7 @@ def classify_ui_action(
         if value:
             val_match = _match_any_keyword(
                 str(value),
-                ["sk-", "ghp_", "api_key", "apikey", "password", "master_key", "private_key", "secret="]
+                SENSITIVE_FIELD_KEYWORDS + ["sk-", "ghp_", "secret="]
             )
             if val_match:
                 return Risk.FORBIDDEN, f"Input value matches credential token pattern '{val_match}' (L0)."
@@ -298,6 +298,52 @@ def classify_ui_action(
             return Risk.CONFIRM, reason
         return Risk.LOW_ACTION, "Toggle ordinary preference or setting (L2)."
 
+    elif action_norm in ("close_window", "window.close", "window_close", "close"):
+        title = str(props.get("title") or props.get("name") or "")
+        pname = str(props.get("process_name") or "")
+        from assistant.tools.ui.window_manager import is_consequential_window, is_protected_process_window
+        meta = {"title": title, "process_name": pname}
+        is_prot, prot_reason = is_protected_process_window(meta)
+        if is_prot:
+            return Risk.FORBIDDEN, prot_reason
+        is_conseq, conseq_reason = is_consequential_window(meta)
+        if is_conseq:
+            return Risk.CONFIRM, conseq_reason
+        return Risk.LOW_ACTION, "Safe ordinary window close (L2)."
+
+    elif action_norm in ("activate_window", "window.activate", "window_activate", "activate"):
+        title = str(props.get("title") or props.get("name") or "")
+        pname = str(props.get("process_name") or "")
+        from assistant.tools.ui.window_manager import is_protected_process_window
+        is_prot, prot_reason = is_protected_process_window({"title": title, "process_name": pname})
+        if is_prot:
+            return Risk.FORBIDDEN, prot_reason
+        return Risk.LOW_ACTION, "Safe window activation (L2)."
+
+    elif action_norm in ("click_at", "click"):
+        return Risk.LOW_ACTION, "Safe bounded coordinate click (L2)."
+
+    elif action_norm in ("send_keys", "press_key"):
+        combo = str(selector_text or "").lower()
+        if any(d in combo for d in ("shift+del", "shift+delete", "format", "wipe")):
+            return Risk.CONFIRM, "Destructive keyboard shortcut requires explicit confirmation (L3)."
+        if any(u in combo for u in ("alt+y", "ctrl+alt+del")):
+            return Risk.FORBIDDEN, "Automated confirmation on secure dialogs is forbidden (L0)."
+        return Risk.LOW_ACTION, "Safe keyboard shortcut / key press (L2)."
+
+    elif action_norm in ("type_text", "type"):
+        sensitive, reason = is_credential_field(props, selector_text)
+        if sensitive:
+            return Risk.FORBIDDEN, f"Sensitive/credential field entry blocked (L0): {reason}."
+        if value:
+            val_match = _match_any_keyword(
+                str(value),
+                SENSITIVE_FIELD_KEYWORDS + ["sk-", "ghp_", "secret="]
+            )
+            if val_match:
+                return Risk.FORBIDDEN, f"Input value matches credential token pattern '{val_match}' (L0)."
+        return Risk.LOW_ACTION, "Input text into ordinary non-sensitive field (L2)."
+
     return Risk.LOW_ACTION, "Default UI action (L2)."
 
 
@@ -306,23 +352,36 @@ def classify_ui_action_from_args(tool_name: str, args: dict[str, Any]) -> Tuple[
 
     Used by PolicyEngine before tool execution starts.
     """
-    corpus = " ".join([
-        str(args.get("name") or ""),
+    title = str(args.get("title") or args.get("name") or "")
+    process_name = str(args.get("process_name") or "")
+    keys = str(args.get("keys") or "")
+    text_val = str(args.get("text") or args.get("value") or "") if ("text" in args or "value" in args) else None
+
+    corpus_parts = [
+        title,
+        process_name,
+        keys,
         str(args.get("automation_id") or ""),
         str(args.get("path") or ""),
         str(args.get("control_type") or ""),
-    ])
+    ]
+    corpus = " ".join([p for p in corpus_parts if p])
+
     props_hint = {
-        "name": str(args.get("name") or ""),
+        "title": title,
+        "name": title,
+        "process_name": process_name,
         "automation_id": str(args.get("automation_id") or ""),
         "control_type": str(args.get("control_type") or ""),
         "is_password": False,
     }
-    value = str(args.get("value") or "") if "value" in args else None
+
+    selector = keys if keys else corpus
 
     return classify_ui_action(
         action=tool_name,
         props=props_hint,
-        selector_text=corpus,
-        value=value,
+        selector_text=selector,
+        value=text_val,
     )
+

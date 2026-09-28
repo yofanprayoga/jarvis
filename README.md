@@ -25,7 +25,6 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 - [x] **Phase 10:** Native Windows UI Automation & Desktop Control (Phase 10A, 10B, 10C, 10D Completed)
 - [x] **Phase 11:** Voice Input Layer & Local STT (Faster-Whisper CPU + Native winmm.dll Completed)
 - [x] **Phase 12:** Persistent Local Memory, Context Resolution & Safe Workflow Learning (Completed)
-- [ ] **Phase 13:** Cloud LLM Fallback & Hybrid Routing
 
 ## Quick Start (CLI, Tray UI, Voice, Memory & Playbooks)
 

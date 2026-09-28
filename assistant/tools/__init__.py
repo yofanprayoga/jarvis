@@ -58,6 +58,13 @@ from assistant.tools.browser.browser_tools import (
     browser_type_tool,
 )
 
+# Phase 10A tools
+from assistant.tools.ui.ui_tools import (
+    inspect_tree_tool,
+    find_control_tool,
+    get_control_info_tool,
+)
+
 
 # Register all tools
 for tool_def in [
@@ -116,6 +123,10 @@ for tool_def in [
     browser_find_links_tool,
     browser_click_tool,
     browser_type_tool,
+    # Phase 10A Desktop GUI Inspection (L1)
+    inspect_tree_tool,
+    find_control_tool,
+    get_control_info_tool,
 ]:
     # Prevent duplicate registration if reloaded
     if registry.get(tool_def.name) is None:

@@ -17,7 +17,7 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 - [x] **Phase 2:** Fast Path & Intent Router (Completed)
 - [x] **Phase 3:** Local LLM Integration & Evaluation Suite (Completed)
 - [x] **Phase 4:** Diagnostics Playbooks (BSOD, Crashes, Disk 100%) (Completed)
-- [ ] **Phase 5:** Tray UI & Background Mode
+- [x] **Phase 5:** Tray UI & Background Mode (Completed)
 - [ ] **Phase 6:** Web Research Pipeline
 - [ ] **Phase 7:** Game & App Investigation
 - [ ] **Phase 8:** Controlled Modifications (L3 Safe Edits)
@@ -26,10 +26,16 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 - [ ] **Phase 11:** Voice (Mic standby / Push-to-Talk + Piper TTS)
 - [ ] **Phase 12:** Cloud LLM & Extensions
 
-## Quick Start (CLI & Playbooks)
+## Quick Start (CLI, Tray UI & Playbooks)
 
-Activate the local environment and run tools or playbooks:
+Activate the local environment and run tools, UI, or playbooks:
 ```powershell
+# Jalankan antarmuka System Tray + Global Hotkey (Ctrl+Shift+J)
+.\.venv\Scripts\python.exe -m assistant tray
+
+# Buka jendela Chat Window langsung (Dark mode Tkinter)
+.\.venv\Scripts\python.exe -m assistant chat
+
 # List all 24 registered tools
 .\.venv\Scripts\python.exe -m assistant list
 
@@ -58,7 +64,7 @@ Activate the local environment and run tools or playbooks:
 
 ## Running Tests & Benchmark Evaluation
 ```powershell
-# Run unit tests (49 tests)
+# Run unit tests (53 tests)
 .\.venv\Scripts\python.exe -m unittest discover tests
 
 # Run benchmark evaluation suite (30 test prompts, route & target accuracy)

@@ -271,6 +271,12 @@ def main() -> None:
     audit_parser = subparsers.add_parser("audit", help="View recent audit log entries")
     audit_parser.add_argument("--limit", type=int, default=15, help="Number of records to display")
 
+    # 'tray' command
+    subparsers.add_parser("tray", help="Run background system tray app and hotkey listener")
+
+    # 'chat' command
+    subparsers.add_parser("chat", help="Open the dark mode chat window directly")
+
     # 'repl' command
     subparsers.add_parser("repl", help="Start interactive REPL")
 
@@ -286,6 +292,13 @@ def main() -> None:
         cmd_tool(args)
     elif args.command == "audit":
         cmd_audit(args)
+    elif args.command == "tray":
+        from assistant.ui.tray import run_tray_app
+        run_tray_app()
+    elif args.command == "chat":
+        from assistant.ui.chat_window import ChatWindow
+        w = ChatWindow()
+        w.run_main_loop()
     elif args.command == "repl" or args.command is None:
         cmd_repl()
 

@@ -1,0 +1,27 @@
+# Jarvis-lite — Local Windows PC Assistant
+
+A local, Windows-first AI assistant that behaves like a **PC operator**, not just a chatbot. Designed for personal use on a living-room PC.
+
+## Architecture Highlights
+- **Two-Path Design:**
+  - **Fast path (< 1s, no LLM):** Regex/YAML intent router handles common actions (launch apps, open websites, search YouTube) instantly.
+  - **Analysis path (LLM + Playbooks):** Deterministic diagnostic playbooks run first, then a local 3B–4B LLM explains findings and recommends actions.
+- **Strict Security:** Fixed 4-tier risk model (L0–L3). The model never modifies system settings without explicit user confirmation.
+- **Resource Efficient:** Target machine is an Intel Core i5-8250U, 8 GB RAM. Idle footprint < 150 MB; model auto-unloaded when idle.
+
+## Progress & Status
+See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadmap and [DECISIONS.md](file:///d:/project/jarvis/DECISIONS.md) for architectural decisions.
+
+- [x] **Phase 0:** Master Design & Concept
+- [ ] **Phase 1:** Foundation & Read-only System Tools (In Progress)
+- [ ] **Phase 2:** Fast Path (Intent Router)
+- [ ] **Phase 3:** Local LLM Integration
+- [ ] **Phase 4:** Diagnostics Playbooks (BSOD, Crashes, Disk 100%)
+- [ ] **Phase 5:** Tray UI & Background Mode
+- [ ] **Phase 6:** Web Research Pipeline
+- [ ] **Phase 7:** Game & App Investigation
+- [ ] **Phase 8:** Controlled Modifications (L3 Safe Edits)
+- [ ] **Phase 9:** Browser Automation & Screen Reading
+- [ ] **Phase 10:** Desktop GUI Interaction
+- [ ] **Phase 11:** Voice (Mic standby / Push-to-Talk + Piper TTS)
+- [ ] **Phase 12:** Cloud LLM & Extensions

@@ -18,7 +18,7 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 - [x] **Phase 3:** Local LLM Integration & Evaluation Suite (Completed)
 - [x] **Phase 4:** Diagnostics Playbooks (BSOD, Crashes, Disk 100%) (Completed)
 - [x] **Phase 5:** Tray UI & Background Mode (Completed)
-- [ ] **Phase 6:** Web Research Pipeline
+- [x] **Phase 6:** Web Research Pipeline (Completed)
 - [ ] **Phase 7:** Game & App Investigation
 - [ ] **Phase 8:** Controlled Modifications (L3 Safe Edits)
 - [ ] **Phase 9:** Browser Automation & Screen Reading
@@ -26,7 +26,7 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 - [ ] **Phase 11:** Voice (Mic standby / Push-to-Talk + Piper TTS)
 - [ ] **Phase 12:** Cloud LLM & Extensions
 
-## Quick Start (CLI, Tray UI & Playbooks)
+## Quick Start (CLI, Tray UI, Web Research & Playbooks)
 
 Activate the local environment and run tools, UI, or playbooks:
 ```powershell
@@ -36,8 +36,13 @@ Activate the local environment and run tools, UI, or playbooks:
 # Buka jendela Chat Window langsung (Dark mode Tkinter)
 .\.venv\Scripts\python.exe -m assistant chat
 
-# List all 24 registered tools
+# List all 27 registered tools
 .\.venv\Scripts\python.exe -m assistant list
+
+# Web Research & PCGamingWiki Tools
+.\.venv\Scripts\python.exe -m assistant tool web.search query="0x116 VIDEO_TDR_FAILURE" max_results=3
+.\.venv\Scripts\python.exe -m assistant tool web.fetch url="https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x116---video-tdr-failure" max_chars=800
+.\.venv\Scripts\python.exe -m assistant tool web.pcgamingwiki game_name="Cyberpunk 2077"
 
 # List available diagnostic playbooks
 .\.venv\Scripts\python.exe -m assistant playbook list
@@ -64,7 +69,7 @@ Activate the local environment and run tools, UI, or playbooks:
 
 ## Running Tests & Benchmark Evaluation
 ```powershell
-# Run unit tests (53 tests)
+# Run unit tests (60 tests)
 .\.venv\Scripts\python.exe -m unittest discover tests
 
 # Run benchmark evaluation suite (30 test prompts, route & target accuracy)

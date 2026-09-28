@@ -30,6 +30,9 @@ from assistant.tools.dumps.dump_tools import (
 )
 from assistant.tools.events.event_query import events_query, get_crash_summary
 
+# Phase 6 tools
+from assistant.tools.web.web_tools import web_search_tool, web_fetch_tool, pcgw_tool
+
 # Register all tools
 for tool_def in [
     # System observation (L1)
@@ -59,6 +62,10 @@ for tool_def in [
     get_reliability_records,
     events_query,
     get_crash_summary,
+    # Phase 6 Web Research (L1)
+    web_search_tool,
+    web_fetch_tool,
+    pcgw_tool,
 ]:
     # Prevent duplicate registration if reloaded
     if registry.get(tool_def.name) is None:

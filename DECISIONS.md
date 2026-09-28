@@ -30,3 +30,6 @@ This log records architecture and design decisions, changes, and their rationale
 | 2026-09-28 | Native Windows `RegisterHotKey` via ctypes | Provides zero-overhead global hotkey capture without third-party driver or heavy keyboard hook hooks. |
 | 2026-09-28 | Built-in Tkinter over heavy webview/Electron | Guarantees < 50 MB RAM idle footprint on low-spec living room laptop while keeping desktop UI ultra responsive. |
 | 2026-09-28 | Background worker thread for UI interactions | Prevents UI freezing during multi-second diagnostics or LLM inference with cancellation/kill switch support. |
+| 2026-09-28 | Phase 6 completed: Web Research Pipeline & PCGamingWiki | Built `SearchProvider` (`ddgs` / `duckduckgo_search` + offline `MockSearchProvider`), `WebFetcher` with clean text extraction, local TTL disk cache (`data/cache/web/`), `PCGamingWikiClient` MediaWiki parser, and `WebResearcher` pipeline. |
+| 2026-09-28 | Rule 7 prompt-injection defense with untrusted tags | External web data is strictly tagged `<untrusted_web_source>` and treated as passive data; instructions embedded within websites can never trigger an action or policy escalation. |
+| 2026-09-28 | Domain prioritization for technical troubleshooting | Ranks official documentation (`learn.microsoft.com`, `pcgamingwiki.com`, `nvidia.com`, `intel.com`) higher than generic search results. |

@@ -33,9 +33,16 @@ class ToolSelector:
         "nvidia": ["system.get_gpu_info", "system.get_drivers"],
         "driver": ["system.get_drivers", "system.get_gpu_info"],
         "startup": ["startup.list_items", "services.list"],
-        "boot": ["startup.list_items", "services.list", "system.get_overview"],
         "service": ["services.list", "startup.list_items"],
         "layanan": ["services.list", "startup.list_items"],
+        "search": ["web.search"],
+        "cari": ["web.search"],
+        "web": ["web.search", "web.fetch"],
+        "fetch": ["web.fetch"],
+        "game": ["web.pcgamingwiki"],
+        "pcgamingwiki": ["web.pcgamingwiki"],
+        "save": ["web.pcgamingwiki"],
+        "config": ["web.pcgamingwiki"],
     }
 
     # Core default subset when query is generic

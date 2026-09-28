@@ -287,6 +287,22 @@ class PlaybookEngine:
             for f in rule_findings:
                 summary_sections.append(f"- {f}")
 
+        # 4. Optional Web Research Step (Section 11 & 12)
+        if playbook.optional_web_research:
+            template = playbook.optional_web_research.get("query_template")
+            if template:
+                resolved_query = resolve_template_value(template, context)
+                # Only run if resolved query has meaningful terms (not unreplaced braces)
+                if resolved_query and "{" not in resolved_query and resolved_query.strip():
+                    try:
+                        from assistant.tools.web.researcher import web_researcher
+                        res_data = web_researcher.research(resolved_query.strip(), max_sources=2)
+                        if res_data.get("ok") and res_data.get("summary"):
+                            summary_sections.append(f"Riset Web Terkait ({resolved_query.strip()}):\n{res_data['summary']}")
+                            aggregate_data["web_research"] = res_data
+                    except Exception:
+                        pass
+
         return PlaybookResult(
             playbook_name=name,
             ok=True,

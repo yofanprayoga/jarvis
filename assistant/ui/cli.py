@@ -217,6 +217,108 @@ def cmd_audit(args: argparse.Namespace) -> None:
     print("=" * 85)
 
 
+def cmd_memory(args: argparse.Namespace) -> None:
+    """Manage persistent memory (list, get, set, delete, clear)."""
+    from assistant.memory.manager import memory_manager
+
+    action = getattr(args, "action", "list") or "list"
+    category = getattr(args, "category", None)
+    key = getattr(args, "key", None)
+    value = getattr(args, "value", None)
+
+    if action == "list":
+        facts = memory_manager.list_facts(category=category)
+        if not facts:
+            cat_str = f" dalam kategori '{category}'" if category else ""
+            print(f"\n[INFO] Tidak ada data memori tersimpan{cat_str}.")
+            return
+        print(f"\nDaftar Memori ({len(facts)} item):")
+        print("-" * 75)
+        print(f"{'Kategori':<12} | {'Key':<20} | {'Value'}")
+        print("-" * 75)
+        for f in facts:
+            print(f"{f['category']:<12} | {f['key']:<20} | {f['value']}")
+        print("-" * 75)
+    elif action == "get":
+        if not category or not key:
+            print("[ERROR] Gunakan: memory get <category> <key>", file=sys.stderr)
+            return
+        val = memory_manager.recall(category, key)
+        if val is not None:
+            print(f"[{category}] {key} = {val}")
+        else:
+            print(f"[ERROR] [{category}] '{key}' tidak ditemukan di memori.", file=sys.stderr)
+    elif action == "set":
+        if not category or not key or not value:
+            print("[ERROR] Gunakan: memory set <category> <key> <value>", file=sys.stderr)
+            return
+        ok, msg = memory_manager.remember(category, key, value)
+        if ok:
+            print(f"[OK] {msg}")
+        else:
+            print(f"[ERROR] {msg}", file=sys.stderr)
+    elif action == "delete":
+        if not category or not key:
+            print("[ERROR] Gunakan: memory delete <category> <key>", file=sys.stderr)
+            return
+        ok, msg = memory_manager.forget(category, key)
+        if ok:
+            print(f"[OK] {msg}")
+        else:
+            print(f"[ERROR] {msg}", file=sys.stderr)
+    elif action == "clear":
+        ok, msg = memory_manager.clear(category=category)
+        print(f"[OK] {msg}")
+
+
+def cmd_workflow(args: argparse.Namespace) -> None:
+    """Manage workflows (list, approve, run)."""
+    from assistant.memory.workflow_learner import workflow_learner
+
+    action = getattr(args, "action", "list") or "list"
+    identifier = getattr(args, "id_or_name", None)
+    status = getattr(args, "status", None)
+    name = getattr(args, "name", None)
+    trigger = getattr(args, "trigger", None)
+
+    if action == "list":
+        wfs = workflow_learner.list_workflows(status=status)
+        if not wfs:
+            st_str = f" berstatus '{status}'" if status else ""
+            print(f"\n[INFO] Belum ada workflow{st_str} yang tercatat.")
+            return
+        print(f"\nDaftar Workflow ({len(wfs)} item):")
+        print("-" * 80)
+        print(f"{'ID':<4} | {'Status':<10} | {'Name':<25} | {'Trigger':<20} | {'Steps'}")
+        print("-" * 80)
+        for w in wfs:
+            print(f"{w['id']:<4} | {w['status'].upper():<10} | {w['name'][:24]:<25} | {w.get('trigger_pattern', '')[:19]:<20} | {len(w.get('steps', []))}")
+        print("-" * 80)
+    elif action == "approve":
+        if not identifier:
+            print("[ERROR] Gunakan: workflow approve <id_or_name> [--name NAME] [--trigger TRIGGER]", file=sys.stderr)
+            return
+        ok, msg = workflow_learner.approve_workflow(identifier, name=name, trigger_pattern=trigger)
+        if ok:
+            print(f"[OK] {msg}")
+        else:
+            print(f"[ERROR] {msg}", file=sys.stderr)
+    elif action == "run":
+        if not identifier:
+            print("[ERROR] Gunakan: workflow run <id_or_name>", file=sys.stderr)
+            return
+        from assistant.core.orchestrator import orchestrator
+        wf = workflow_learner.get_workflow(identifier)
+        if not wf:
+            print(f"[ERROR] Workflow '{identifier}' tidak ditemukan.", file=sys.stderr)
+            return
+        res = workflow_learner.execute_workflow(wf, orchestrator)
+        if res.get("ok"):
+            print(f"[OK] {res.get('summary')}")
+        else:
+            print(f"[FAIL] {res.get('error')}", file=sys.stderr)
+
+
 def cmd_repl() -> None:
     """Interactive command shell with Fast-Path Router support."""
     print("=" * 65)
@@ -327,6 +429,21 @@ def main() -> None:
     audit_parser = subparsers.add_parser("audit", help="View recent audit log entries")
     audit_parser.add_argument("--limit", type=int, default=15, help="Number of records to display")
 
+    # 'memory' command
+    mem_parser = subparsers.add_parser("memory", help="Inspect and manage persistent memory facts")
+    mem_parser.add_argument("action", choices=["list", "get", "set", "delete", "clear"], nargs="?", default="list", help="Action to perform")
+    mem_parser.add_argument("category", nargs="?", help="Category ('project', 'preference', 'alias', 'general')")
+    mem_parser.add_argument("key", nargs="?", help="Key or identifier")
+    mem_parser.add_argument("value", nargs="?", help="Value to set")
+
+    # 'workflow' command
+    wf_parser = subparsers.add_parser("workflow", help="Inspect, approve, and execute learned workflows")
+    wf_parser.add_argument("action", choices=["list", "approve", "run"], nargs="?", default="list", help="Action to perform")
+    wf_parser.add_argument("id_or_name", nargs="?", help="Workflow ID or candidate name")
+    wf_parser.add_argument("--name", help="Custom name when approving")
+    wf_parser.add_argument("--trigger", help="Natural trigger phrase when approving")
+    wf_parser.add_argument("--status", choices=["candidate", "approved", "rejected"], help="Status filter for list")
+
     # 'tray' command
     subparsers.add_parser("tray", help="Run background system tray app and hotkey listener")
 
@@ -344,6 +461,10 @@ def main() -> None:
         cmd_ask(args)
     elif args.command == "voice":
         cmd_voice(args)
+    elif args.command == "memory":
+        cmd_memory(args)
+    elif args.command == "workflow":
+        cmd_workflow(args)
     elif args.command == "playbook":
         cmd_playbook(args)
     elif args.command == "tool":

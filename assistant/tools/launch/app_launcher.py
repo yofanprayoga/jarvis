@@ -80,6 +80,22 @@ class AppIndexer:
             if exe_name in self._allowed_apps or q in self._allowed_apps:
                 return resolved_path
 
+        # 4. Check persistent memory for application aliases
+        try:
+            from assistant.memory.manager import memory_manager
+            mem_target = memory_manager.recall("alias", q)
+            if mem_target:
+                mem_target_lower = mem_target.lower().strip()
+                if mem_target_lower in self._index:
+                    return self._index[mem_target_lower]
+                if Path(mem_target).exists():
+                    return mem_target
+                shutil_path = shutil.which(mem_target_lower)
+                if shutil_path:
+                    return shutil_path
+        except Exception:
+            pass
+
         return None
 
     def is_allowed(self, target: str) -> bool:

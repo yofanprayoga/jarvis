@@ -82,6 +82,17 @@ from assistant.tools.ui.fallback_tools import (
     type_text_tool,
 )
 
+# Phase 12 Memory & Workflow tools
+from assistant.memory.memory_tools import (
+    remember_tool,
+    recall_tool,
+    forget_tool,
+    list_memory_tool,
+    list_workflows_tool,
+    approve_workflow_tool,
+    run_workflow_tool,
+)
+
 
 # Register all tools
 for tool_def in [
@@ -155,6 +166,14 @@ for tool_def in [
     click_at_tool,
     send_keys_tool,
     type_text_tool,
+    # Phase 12 Memory & Workflow Tools (L1 / L2)
+    remember_tool,
+    recall_tool,
+    forget_tool,
+    list_memory_tool,
+    list_workflows_tool,
+    approve_workflow_tool,
+    run_workflow_tool,
 ]:
     # Prevent duplicate registration if reloaded
     if registry.get(tool_def.name) is None:

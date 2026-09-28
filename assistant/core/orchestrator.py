@@ -21,6 +21,8 @@ class Orchestrator:
         audit: AuditLogger | None = None,
         llm: LLMClient | None = None,
         confirm_handler: Optional[Callable[[str, ToolDefinition, dict[str, Any]], bool]] = None,
+        memory_manager: Any | None = None,
+        workflow_learner: Any | None = None,
     ) -> None:
         self.registry = tool_registry or registry
         self.policy = policy or policy_engine
@@ -29,6 +31,8 @@ class Orchestrator:
         self.planner = LLMPlanner(self._llm, self.registry)
         self.explainer = LLMExplainer(self._llm)
         self.confirm_handler = confirm_handler
+        self.memory_manager = memory_manager
+        self.workflow_learner = workflow_learner
 
     def _request_confirmation(self, name: str, tool_def: ToolDefinition, args: dict[str, Any]) -> bool:
         """Request explicit L3 confirmation from the user (via callback, Tk modal dialog, or CLI fallback)."""
@@ -142,18 +146,73 @@ class Orchestrator:
         return result
 
     def handle_request(self, user_query: str) -> dict[str, Any]:
-        """Full end-to-end request handling (Fast-Path -> LLM Planner -> Tool/Playbook -> LLM Explainer)."""
+        """Full end-to-end request handling (Memory -> Workflows -> Fast-Path -> LLM Planner -> Tool/Playbook -> LLM Explainer)."""
         from assistant.core.router import intent_router
+        from assistant.memory.manager import memory_manager as default_mem_mgr
+        from assistant.memory.workflow_learner import workflow_learner as default_wf_learner
+
+        mem_mgr = self.memory_manager or default_mem_mgr
+        wf_learner = self.workflow_learner or default_wf_learner
+
+        # Record conversation query
+        try:
+            mem_mgr.record_turn(session_id="default", role="user", content=user_query)
+        except Exception:
+            pass
+
+        # 0a. Check explicit natural memory instructions
+        mem_cmd = mem_mgr.try_parse_memory_command(user_query)
+        if mem_cmd:
+            cmd_type, cat, key, val = mem_cmd
+            if cmd_type == "remember":
+                ok, msg = mem_mgr.remember(cat, key, val)
+            else:
+                ok, msg = mem_mgr.forget(cat, key)
+            return {
+                "route": "memory",
+                "type": "memory_command",
+                "response": msg,
+                "ok": ok,
+                "status": "success" if ok else "error",
+            }
+
+        # 0b. Check approved multi-step workflows
+        matched_wf = wf_learner.match_approved_trigger(user_query)
+        if matched_wf:
+            wf_res = wf_learner.execute_workflow(matched_wf, self)
+            return {
+                "route": "workflow",
+                "type": "workflow_execution",
+                "workflow": matched_wf.get("name"),
+                "response": wf_res.get("summary") or wf_res.get("error"),
+                "ok": wf_res.get("ok", False),
+                "status": "success" if wf_res.get("ok", False) else "error",
+                "data": wf_res,
+            }
 
         # 1. Try Fast Path first (< 1 second, zero LLM overhead)
         route_res = intent_router.route(user_query)
         if route_res.matched:
+            # Post-action learning
+            if route_res.tool_name and route_res.tool_result and route_res.tool_result.ok:
+                try:
+                    wf_learner.record_action(
+                        intent=route_res.intent,
+                        tool_name=route_res.tool_name,
+                        args=route_res.args,
+                        summary=route_res.tool_result.summary,
+                        ok=True,
+                    )
+                except Exception:
+                    pass
+
             return {
                 "route": "fast",
                 "intent": route_res.intent,
                 "tool": route_res.tool_name,
                 "response": route_res.message,
                 "ok": route_res.tool_result.ok if route_res.tool_result else True,
+                "status": "success" if (route_res.tool_result.ok if route_res.tool_result else True) else "error",
             }
 
         # 2. Analysis Path via LLM Planner
@@ -162,6 +221,17 @@ class Orchestrator:
         if decision.decision_type == "tool_call":
             tool_res = self.run_tool(decision.tool, decision.args)
             if tool_res.ok:
+                try:
+                    wf_learner.record_action(
+                        intent="llm_tool_call",
+                        tool_name=decision.tool,
+                        args=decision.args,
+                        summary=tool_res.summary,
+                        ok=True,
+                    )
+                except Exception:
+                    pass
+
                 explanation = self.explainer.explain(user_query, tool_res.summary)
                 return {
                     "route": "llm",

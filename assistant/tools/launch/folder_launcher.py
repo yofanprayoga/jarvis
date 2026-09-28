@@ -45,6 +45,22 @@ def resolve_folder(folder_name: str) -> Path | None:
         if candidate.is_dir():
             return candidate
 
+    # Check persistent memory for project locations or aliases
+    try:
+        from assistant.memory.manager import memory_manager
+        clean_target = fn.replace("project ", "").strip()
+        mem_path = (
+            memory_manager.recall("project", clean_target)
+            or memory_manager.recall("project", fn)
+            or memory_manager.recall("alias", clean_target)
+        )
+        if mem_path:
+            p_mem = Path(mem_path)
+            if p_mem.is_dir():
+                return p_mem.resolve()
+    except Exception:
+        pass
+
     # Check direct relative or absolute path
     p = Path(folder_name)
     if p.is_dir():

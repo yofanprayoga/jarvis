@@ -119,7 +119,26 @@ class PolicyEngine:
                         risk=Risk.CONFIRM,
                     )
 
-        # 6. Check L3 (CONFIRM)
+        # 6. Check UI Automation actions dynamic risk (Phase 10B)
+        if tool_def.name in ("ui.focus", "ui.invoke", "ui.set_value", "ui.toggle"):
+            from assistant.tools.ui.risk_classifier import classify_ui_action_from_args
+            u_risk, u_reason = classify_ui_action_from_args(tool_def.name, args)
+            if u_risk == Risk.FORBIDDEN:
+                return PolicyDecision(
+                    allowed=False,
+                    reason=f"Action '{tool_def.name}' blocked by security policy (L0): {u_reason}",
+                    needs_confirmation=False,
+                    risk=Risk.FORBIDDEN,
+                )
+            if u_risk == Risk.CONFIRM:
+                return PolicyDecision(
+                    allowed=True,
+                    reason=f"Action '{tool_def.name}' requires user confirmation (L3): {u_reason}",
+                    needs_confirmation=True,
+                    risk=Risk.CONFIRM,
+                )
+
+        # 7. Check L3 (CONFIRM)
         if tool_def.risk == Risk.CONFIRM:
             return PolicyDecision(
                 allowed=True,

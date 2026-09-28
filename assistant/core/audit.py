@@ -64,7 +64,17 @@ class AuditLogger:
     ) -> int:
         """Write a tool execution record to the audit database."""
         now_utc = datetime.now(timezone.utc).isoformat()
-        args_str = json.dumps(args, default=str)
+        # Audit hygiene: redact passwords, credentials, and sensitive input values
+        clean_args = {}
+        for k, v in args.items():
+            k_lower = k.lower()
+            if any(s in k_lower for s in ("password", "passwd", "token", "secret", "credential", "pin", "cvv", "api_key", "apikey")):
+                clean_args[k] = "[REDACTED]"
+            elif tool_name == "ui.set_value" and k == "value":
+                clean_args[k] = f"[{len(str(v))} chars redacted]"
+            else:
+                clean_args[k] = v
+        args_str = json.dumps(clean_args, default=str)
         conn = sqlite3.connect(str(self.db_path), timeout=10.0)
         try:
             cur = conn.execute(

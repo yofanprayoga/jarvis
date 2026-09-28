@@ -65,6 +65,14 @@ from assistant.tools.ui.ui_tools import (
     get_control_info_tool,
 )
 
+# Phase 10B tools
+from assistant.tools.ui.interaction_tools import (
+    focus_tool,
+    invoke_tool,
+    set_value_tool,
+    toggle_tool,
+)
+
 
 # Register all tools
 for tool_def in [
@@ -127,6 +135,11 @@ for tool_def in [
     inspect_tree_tool,
     find_control_tool,
     get_control_info_tool,
+    # Phase 10B Controlled Interactive Actions (L2 / L3)
+    focus_tool,
+    invoke_tool,
+    set_value_tool,
+    toggle_tool,
 ]:
     # Prevent duplicate registration if reloaded
     if registry.get(tool_def.name) is None:

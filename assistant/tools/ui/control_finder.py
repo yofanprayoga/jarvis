@@ -117,7 +117,7 @@ def _score_match(
         q_lower = name_query.strip().lower()
         n_lower = node_name.lower()
         if n_lower == q_lower:
-            score += 0.35
+            score += 0.45
         elif q_lower in n_lower:
             score += 0.20
         elif n_lower in q_lower and n_lower:

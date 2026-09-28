@@ -46,7 +46,7 @@ def _walker_get_first_child(wvtable: Any, p_walker: c_void_p, p_element: c_void_
 def _walker_get_next_sibling(wvtable: Any, p_walker: c_void_p, p_element: c_void_p) -> Optional[c_void_p]:
     """Get next sibling element via ControlViewWalker."""
     proto = WINFUNCTYPE(c_long, c_void_p, c_void_p, POINTER(c_void_p))
-    fn = proto(wvtable[5])
+    fn = proto(wvtable[6])
     p_sibling = c_void_p()
     hr = fn(p_walker, p_element, byref(p_sibling))
     if hr != 0 or not p_sibling.value:

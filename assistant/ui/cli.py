@@ -444,6 +444,9 @@ def main() -> None:
     wf_parser.add_argument("--trigger", help="Natural trigger phrase when approving")
     wf_parser.add_argument("--status", choices=["candidate", "approved", "rejected"], help="Status filter for list")
 
+    # 'check' command
+    subparsers.add_parser("check", help="Evaluate system capabilities and deployment readiness")
+
     # 'tray' command
     subparsers.add_parser("tray", help="Run background system tray app and hotkey listener")
 
@@ -455,7 +458,10 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    if args.command == "list":
+    if args.command == "check":
+        from assistant.core.capability import CapabilityChecker
+        print(CapabilityChecker.format_cli_report())
+    elif args.command == "list":
         cmd_list(args)
     elif args.command == "ask":
         cmd_ask(args)

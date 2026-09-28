@@ -1,0 +1,33 @@
+name: game_stutter
+description: Menganalisis penyebab game patah-patah (stuttering), frame drop, thermal throttling, atau salah alokasi GPU.
+inputs:
+  sample_seconds:
+    type: int
+    default: 2
+steps:
+  - id: overview
+    tool: system.get_overview
+  - id: cpu
+    tool: system.get_cpu
+  - id: memory
+    tool: system.get_memory
+  - id: gpu
+    tool: system.get_gpu_info
+  - id: disk
+    tool: system.get_disk_activity
+    args:
+      sample_seconds: "{sample_seconds}"
+    optional: true
+  - id: top_proc
+    tool: process.list_top
+    args:
+      sort_by: "cpu"
+      limit: 5
+rules:
+  - if: "cpu.data.get('throttling_suspected', False)"
+    finding: "Indikasi Thermal Throttling: Frekuensi clock CPU turun di bawah Base Clock saat beban kerja, menyebabkan penurunan FPS (frame drop) mendadak."
+  - if: "memory.data.get('percent_used', 0) > 85"
+    finding: "RAM hampir penuh (>85%), memicu Windows menukar memori ke disk (Page Faults) yang menjadi penyebab utama game stuttering/micro-freeze."
+  - if: "len(gpu.data.get('adapters', [])) > 1"
+    finding: "Laptop memiliki Dual-GPU (Intel Integrated + NVIDIA Dedicated). Pastikan game diatur ke mode 'High Performance' di Windows Graphics Settings (UserGpuPreferences) agar tidak berjalan di GPU bawaan Intel yang lambat."
+explain: true

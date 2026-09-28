@@ -1,0 +1,24 @@
+name: game_save_analysis
+description: Menganalisis lokasi save game dan konfigurasi, format file (teks/biner/terenkripsi), serta membuat backup aman.
+inputs:
+  game_name:
+    type: str
+    default: "Cyberpunk 2077"
+steps:
+  - id: find_paths
+    tool: games.find_save_and_config
+    args:
+      game_name: "{game_name}"
+  - id: pcgw
+    tool: web.pcgamingwiki
+    args:
+      game_name: "{game_name}"
+    optional: true
+rules:
+  - if: "len(find_paths.data.get('verified_save_paths', [])) > 0"
+    finding: "Folder save game lokal berhasil ditemukan di direktori pengguna."
+  - if: "len(find_paths.data.get('verified_config_paths', [])) > 0"
+    finding: "File konfigurasi game (.ini/.cfg/.json) berhasil ditemukan dan dapat dianalisis."
+  - if: "'steam' in str(find_paths.data.get('candidate_paths', [])).lower()"
+    finding: "Game ini mendukung sinkronisasi Steam Cloud. Perubahan save game lokal dapat ditimpa (overwrite) oleh Steam Cloud jika fitur sinkronisasi aktif."
+explain: true

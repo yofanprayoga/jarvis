@@ -1,0 +1,28 @@
+name: app_investigation
+description: Menginvestigasi identitas aplikasi, integritas signature digital, versi, layanan terkait, dan kemampuan CLI.
+inputs:
+  app_name:
+    type: str
+    default: "notepad"
+steps:
+  - id: resolve
+    tool: apps.resolve
+    args:
+      name: "{app_name}"
+  - id: inspect
+    tool: apps.inspect
+    args:
+      name: "{app_name}"
+  - id: cli_help
+    tool: apps.get_cli_help
+    args:
+      app_path: "{resolve.data.primary_path}"
+    optional: true
+rules:
+  - if: "inspect.data.get('metadata', {}).get('IsOSBinary', False)"
+    finding: "Aplikasi ini adalah komponen buster resmi sistem operasi Windows (System32)."
+  - if: "inspect.data.get('metadata', {}).get('SignatureStatus') == 'Valid'"
+    finding: "Signature digital Authenticode terverifikasi VALID dan aman dari penerbit tepercaya."
+  - if: "len(inspect.data.get('related_services', [])) > 0"
+    finding: "Aplikasi ini terhubung dengan layanan latar belakang (Windows Service)."
+explain: true

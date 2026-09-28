@@ -36,15 +36,20 @@ Activate the local environment and run tools, UI, or playbooks:
 # Buka jendela Chat Window langsung (Dark mode Tkinter)
 .\.venv\Scripts\python.exe -m assistant chat
 
-# List all 27 registered tools
+# List all 35 registered tools
 .\.venv\Scripts\python.exe -m assistant list
+
+# Game Discovery & Save/Config Inspector Tools
+.\.venv\Scripts\python.exe -m assistant tool games.list_installed
+.\.venv\Scripts\python.exe -m assistant tool games.find_save_and_config game_name="Cyberpunk 2077"
+.\.venv\Scripts\python.exe -m assistant tool apps.resolve name="notepad"
 
 # Web Research & PCGamingWiki Tools
 .\.venv\Scripts\python.exe -m assistant tool web.search query="0x116 VIDEO_TDR_FAILURE" max_results=3
 .\.venv\Scripts\python.exe -m assistant tool web.fetch url="https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/bug-check-0x116---video-tdr-failure" max_chars=800
 .\.venv\Scripts\python.exe -m assistant tool web.pcgamingwiki game_name="Cyberpunk 2077"
 
-# List available diagnostic playbooks
+# List available diagnostic playbooks (7 available)
 .\.venv\Scripts\python.exe -m assistant playbook list
 
 # Run a diagnostic playbook directly
@@ -52,10 +57,14 @@ Activate the local environment and run tools, UI, or playbooks:
 .\.venv\Scripts\python.exe -m assistant playbook disk_full_usage
 .\.venv\Scripts\python.exe -m assistant playbook system_slowness
 .\.venv\Scripts\python.exe -m assistant playbook app_crash_diagnosis
+.\.venv\Scripts\python.exe -m assistant playbook game_save_analysis
+.\.venv\Scripts\python.exe -m assistant playbook game_stutter
+.\.venv\Scripts\python.exe -m assistant playbook app_investigation
 
 # Natural Language Commands (Fast Path & Analysis Path with Playbooks)
 .\.venv\Scripts\python.exe -m assistant ask "buka kuramanime"
 .\.venv\Scripts\python.exe -m assistant ask "cari lofi di youtube"
+.\.venv\Scripts\python.exe -m assistant ask "save game cyberpunk ada dimana ya"
 .\.venv\Scripts\python.exe -m assistant ask "semalem laptop tiba2 layar biru, kenapa ya"
 .\.venv\Scripts\python.exe -m assistant ask "disk gw 100% terus nih"
 .\.venv\Scripts\python.exe -m assistant ask "laptop lemot banget kenapa ya"
@@ -69,7 +78,7 @@ Activate the local environment and run tools, UI, or playbooks:
 
 ## Running Tests & Benchmark Evaluation
 ```powershell
-# Run unit tests (60 tests)
+# Run unit tests (69 tests)
 .\.venv\Scripts\python.exe -m unittest discover tests
 
 # Run benchmark evaluation suite (30 test prompts, route & target accuracy)

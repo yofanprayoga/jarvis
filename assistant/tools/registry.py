@@ -39,11 +39,11 @@ class ToolRegistry:
                 schemas.append(tool_def.get_json_schema())
         return schemas
 
-    def execute(self, name: str, **kwargs: Any) -> ToolResult:
+    def execute(self, tool_name: str, /, **kwargs: Any) -> ToolResult:
         """Execute a tool by name with provided keyword arguments."""
-        tool_def = self.get(name)
+        tool_def = self.get(tool_name)
         if not tool_def:
-            return ToolResult.fail(f"Tool '{name}' not found in registry.")
+            return ToolResult.fail(f"Tool '{tool_name}' not found in registry.")
         return tool_def.run(**kwargs)
 
 

@@ -21,8 +21,7 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 - [x] **Phase 6:** Web Research Pipeline (Completed)
 - [x] **Phase 7:** Game & App Investigation (Completed)
 - [x] **Phase 8:** Controlled Modifications (L3 Safe Edits) (Completed)
-- [x] **Phase 9A:** Screen Reading & Local OCR (Completed)
-- [ ] **Phase 9B–D:** Browser Automation (Not Started)
+- [x] **Phase 9:** Browser Automation & Screen Reading (Phase 9A, 9B, 9C Completed)
 - [ ] **Phase 10:** Desktop GUI Interaction
 - [ ] **Phase 11:** Voice (Mic standby / Push-to-Talk + Piper TTS)
 - [ ] **Phase 12:** Cloud LLM & Extensions
@@ -37,7 +36,7 @@ Activate the local environment and run tools, UI, or playbooks:
 # Buka jendela Chat Window langsung (Dark mode Tkinter)
 .\.venv\Scripts\python.exe -m assistant chat
 
-# List all 41 registered tools
+# List all 47 registered tools
 .\.venv\Scripts\python.exe -m assistant list
 
 # Controlled File Modifications (Phase 8 - L3 Safe Edits, Diffs, Backups & Rollback)
@@ -56,6 +55,14 @@ Activate the local environment and run tools, UI, or playbooks:
 .\.venv\Scripts\python.exe -m assistant tool screen.capture
 .\.venv\Scripts\python.exe -m assistant tool screen.capture target="active_window"
 .\.venv\Scripts\python.exe -m assistant tool screen.ocr
+
+# Isolated Browser Automation & Interactive Actions (Phase 9B & 9C - Playwright)
+.\.venv\Scripts\python.exe -m assistant tool browser.open url="https://learn.microsoft.com"
+.\.venv\Scripts\python.exe -m assistant tool browser.read max_chars=2000
+.\.venv\Scripts\python.exe -m assistant tool browser.screenshot
+.\.venv\Scripts\python.exe -m assistant tool browser.find_links query="documentation"
+.\.venv\Scripts\python.exe -m assistant tool browser.type selector="input[type='search']" text="Windows Kernel"
+.\.venv\Scripts\python.exe -m assistant tool browser.click selector="a.nav-link"
 
 # Web Research & PCGamingWiki Tools
 .\.venv\Scripts\python.exe -m assistant tool web.search query="0x116 VIDEO_TDR_FAILURE" max_results=3
@@ -91,7 +98,7 @@ Activate the local environment and run tools, UI, or playbooks:
 
 ## Running Tests & Benchmark Evaluation
 ```powershell
-# Run unit tests (86 tests)
+# Run unit tests (101 tests)
 .\.venv\Scripts\python.exe -m unittest discover tests
 
 # Run benchmark evaluation suite (30 test prompts, route & target accuracy)

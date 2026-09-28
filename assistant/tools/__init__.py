@@ -48,6 +48,16 @@ from assistant.tools.apps.app_tools import resolve_app_tool, inspect_app_tool, g
 # Phase 9A tools
 from assistant.tools.screen.screen_tools import capture_screen_tool, ocr_screen_tool, inspect_window_tool
 
+# Phase 9B & 9C tools
+from assistant.tools.browser.browser_tools import (
+    browser_open_tool,
+    browser_read_tool,
+    browser_screenshot_tool,
+    browser_find_links_tool,
+    browser_click_tool,
+    browser_type_tool,
+)
+
 
 # Register all tools
 for tool_def in [
@@ -99,6 +109,13 @@ for tool_def in [
     inspect_window_tool,
     capture_screen_tool,
     ocr_screen_tool,
+    # Phase 9B & 9C Browser Automation (L1 / L2 / L3)
+    browser_open_tool,
+    browser_read_tool,
+    browser_screenshot_tool,
+    browser_find_links_tool,
+    browser_click_tool,
+    browser_type_tool,
 ]:
     # Prevent duplicate registration if reloaded
     if registry.get(tool_def.name) is None:

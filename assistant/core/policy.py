@@ -74,7 +74,52 @@ class PolicyEngine:
                 except Exception:
                     pass
 
-        # 5. Check L3 (CONFIRM)
+        # 5. Check browser actions dynamic risk (Phase 9B/9C)
+        if tool_def.name.startswith("browser."):
+            from assistant.tools.browser.safety import classify_action_risk
+            if tool_def.name == "browser.type":
+                b_risk, b_reason = classify_action_risk(
+                    action="type",
+                    selector=str(args.get("selector", "")),
+                    text=str(args.get("text", "")),
+                )
+                if b_risk == Risk.FORBIDDEN:
+                    return PolicyDecision(
+                        allowed=False,
+                        reason=f"Action '{tool_def.name}' blocked by security policy (L0): {b_reason}",
+                        needs_confirmation=False,
+                        risk=Risk.FORBIDDEN,
+                    )
+                if b_risk == Risk.CONFIRM:
+                    return PolicyDecision(
+                        allowed=True,
+                        reason=f"Action '{tool_def.name}' requires user confirmation (L3): {b_reason}",
+                        needs_confirmation=True,
+                        risk=Risk.CONFIRM,
+                    )
+            elif tool_def.name == "browser.click":
+                b_risk, b_reason = classify_action_risk(
+                    action="click",
+                    selector=str(args.get("selector", "")),
+                    text=str(args.get("text", "")),
+                    role=str(args.get("role", "")),
+                )
+                if b_risk == Risk.FORBIDDEN:
+                    return PolicyDecision(
+                        allowed=False,
+                        reason=f"Action '{tool_def.name}' blocked by security policy (L0): {b_reason}",
+                        needs_confirmation=False,
+                        risk=Risk.FORBIDDEN,
+                    )
+                if b_risk == Risk.CONFIRM:
+                    return PolicyDecision(
+                        allowed=True,
+                        reason=f"Action '{tool_def.name}' requires user confirmation (L3): {b_reason}",
+                        needs_confirmation=True,
+                        risk=Risk.CONFIRM,
+                    )
+
+        # 6. Check L3 (CONFIRM)
         if tool_def.risk == Risk.CONFIRM:
             return PolicyDecision(
                 allowed=True,

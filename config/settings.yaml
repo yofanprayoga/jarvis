@@ -1,0 +1,28 @@
+# Assistant General Settings
+assistant:
+  name: "Jarvis"
+  language: "id"  # default response language: "id" or "en"
+  version: "0.1.0"
+
+# Paths
+paths:
+  data_dir: "data"
+  audit_db: "data/audit.db"
+  reports_dir: "data/reports"
+  backups_dir: "data/backups"
+  cache_dir: "data/cache"
+
+# Tool Execution Timeouts (seconds)
+timeouts:
+  default_tool_timeout_s: 30
+  sampling_timeout_s: 15
+
+# LLM Configuration (Phase 3 onwards)
+llm:
+  provider: "ollama"
+  model: "qwen2.5:3b-instruct"
+  base_url: "http://localhost:11434"
+  keep_alive: "5m"
+  temperature: 0.1
+  timeout_s: 60
+  max_planning_steps: 6

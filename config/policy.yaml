@@ -1,0 +1,43 @@
+# Security and Policy Configuration
+
+# Risk Levels Reference (Section 8.1):
+# L0: FORBIDDEN   - Never executed under any circumstance
+# L1: OBSERVE     - Read-only inspection / telemetry, no confirmation required
+# L2: LOW_ACTION  - Safe actions (open url/app, make backup), logged, no confirmation required
+# L3: CONFIRM     - Controlled changes (edit file, kill process), explicit typed/click confirmation required
+
+# Protected Critical Windows Processes (L0 - Never terminate or modify)
+protected_processes:
+  - "csrss.exe"
+  - "winlogon.exe"
+  - "lsass.exe"
+  - "smss.exe"
+  - "services.exe"
+  - "dwm.exe"
+  - "svchost.exe"
+  - "explorer.exe"
+  - "system"
+  - "registry"
+
+# Forbidden Action Keywords or Operations (L0)
+forbidden_actions:
+  - "disable_defender"
+  - "disable_firewall"
+  - "format_disk"
+  - "delete_system32"
+  - "bypass_captcha"
+  - "store_password"
+
+# Allowed Filesystem Roots for Read Operations (L1)
+allowed_read_roots:
+  - "C:\\Windows\\Minidump"
+  - "C:\\ProgramData"
+  - "data"
+  - "config"
+  - "assistant"
+  - "tests"
+
+# Allowed URL Schemes (Phase 2+)
+allowed_url_schemes:
+  - "http"
+  - "https"

@@ -13,7 +13,7 @@ A local, Windows-first AI assistant that behaves like a **PC operator**, not jus
 See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadmap and [DECISIONS.md](file:///d:/project/jarvis/DECISIONS.md) for architectural decisions.
 
 - [x] **Phase 0:** Master Design & Concept
-- [ ] **Phase 1:** Foundation & Read-only System Tools (In Progress)
+- [x] **Phase 1:** Foundation & Read-only System Tools (Completed)
 - [ ] **Phase 2:** Fast Path (Intent Router)
 - [ ] **Phase 3:** Local LLM Integration
 - [ ] **Phase 4:** Diagnostics Playbooks (BSOD, Crashes, Disk 100%)
@@ -25,3 +25,29 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 - [ ] **Phase 10:** Desktop GUI Interaction
 - [ ] **Phase 11:** Voice (Mic standby / Push-to-Talk + Piper TTS)
 - [ ] **Phase 12:** Cloud LLM & Extensions
+
+## Quick Start (Phase 1 CLI)
+
+Activate the local environment and run tools:
+```powershell
+# List all 10 registered tools
+.\.venv\Scripts\python.exe -m assistant list
+
+# Run a specific tool (e.g., system overview, disk health, memory)
+.\.venv\Scripts\python.exe -m assistant tool system.get_overview
+.\.venv\Scripts\python.exe -m assistant tool system.get_cpu interval_s=0.5
+.\.venv\Scripts\python.exe -m assistant tool system.get_memory
+.\.venv\Scripts\python.exe -m assistant tool system.get_disks
+.\.venv\Scripts\python.exe -m assistant tool process.list_top by=memory count=5
+
+# View recent SQLite audit logs
+.\.venv\Scripts\python.exe -m assistant audit --limit 10
+
+# Start interactive CLI REPL
+.\.venv\Scripts\python.exe -m assistant
+```
+
+## Running Tests
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover tests
+```

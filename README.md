@@ -22,22 +22,44 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 - [x] **Phase 7:** Game & App Investigation (Completed)
 - [x] **Phase 8:** Controlled Modifications (L3 Safe Edits) (Completed)
 - [x] **Phase 9:** Browser Automation & Screen Reading (Phase 9A, 9B, 9C Completed)
-- [ ] **Phase 10:** Desktop GUI Interaction
-- [ ] **Phase 11:** Voice (Mic standby / Push-to-Talk + Piper TTS)
-- [ ] **Phase 12:** Cloud LLM & Extensions
+- [x] **Phase 10:** Native Windows UI Automation & Desktop Control (Phase 10A, 10B, 10C, 10D Completed)
+- [x] **Phase 11:** Voice Input Layer & Local STT (Faster-Whisper CPU + Native winmm.dll Completed)
+- [x] **Phase 12:** Persistent Local Memory, Context Resolution & Safe Workflow Learning (Completed)
+- [ ] **Phase 13:** Cloud LLM Fallback & Hybrid Routing
 
-## Quick Start (CLI, Tray UI, Web Research & Playbooks)
+## Quick Start (CLI, Tray UI, Voice, Memory & Playbooks)
 
 Activate the local environment and run tools, UI, or playbooks:
 ```powershell
 # Jalankan antarmuka System Tray + Global Hotkey (Ctrl+Shift+J)
 .\.venv\Scripts\python.exe -m assistant tray
 
-# Buka jendela Chat Window langsung (Dark mode Tkinter)
+# Buka jendela Chat Window langsung (Dark mode Tkinter dengan tombol Push-to-Talk)
 .\.venv\Scripts\python.exe -m assistant chat
 
-# List all 47 registered tools
+# Rekam dan transkripsi suara langsung dari CLI (Local faster-whisper STT)
+.\.venv\Scripts\python.exe -m assistant voice
+
+# List all 66 registered tools
 .\.venv\Scripts\python.exe -m assistant list
+
+# Persistent Memory & Context (Phase 12 - SQLite data/memory.db)
+.\.venv\Scripts\python.exe -m assistant memory list
+.\.venv\Scripts\python.exe -m assistant memory recall category="project" key="jarvis"
+.\.venv\Scripts\python.exe -m assistant ask "project jarvis ada di D:\project\jarvis"
+.\.venv\Scripts\python.exe -m assistant ask "ingat preferensi editor vscode"
+.\.venv\Scripts\python.exe -m assistant ask "buka project jarvis"
+
+# Safe Workflow Learning (Candidate Detection & Explicit Approval)
+.\.venv\Scripts\python.exe -m assistant workflow list
+.\.venv\Scripts\python.exe -m assistant workflow approve 1 --trigger "buka workspace dev"
+
+# Desktop UI Automation & Inspection (Phase 10A-10C - Native UIA / Win32)
+.\.venv\Scripts\python.exe -m assistant tool ui.inspect_tree window_title="Notepad" max_depth=3
+.\.venv\Scripts\python.exe -m assistant tool ui.find_control name="Text Editor" control_type="Edit"
+.\.venv\Scripts\python.exe -m assistant tool ui.set_value name="Text Editor" value="Hello from Jarvis"
+.\.venv\Scripts\python.exe -m assistant tool window.activate title="Notepad"
+.\.venv\Scripts\python.exe -m assistant tool window.close title="Notepad"
 
 # Controlled File Modifications (Phase 8 - L3 Safe Edits, Diffs, Backups & Rollback)
 .\.venv\Scripts\python.exe -m assistant tool files.propose_edit file_path="config/settings.yaml" new_content="name: JarvisPRO\n" explanation="Ubah nama assistant"
@@ -98,7 +120,7 @@ Activate the local environment and run tools, UI, or playbooks:
 
 ## Running Tests & Benchmark Evaluation
 ```powershell
-# Run unit tests (101 tests)
+# Run full unit test suite (272 tests, 100% PASS)
 .\.venv\Scripts\python.exe -m unittest discover tests
 
 # Run benchmark evaluation suite (30 test prompts, route & target accuracy)

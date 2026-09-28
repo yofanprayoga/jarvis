@@ -1,0 +1,42 @@
+name: system_slowness
+description: Menganalisis penyebab performa komputer lambat, lemot, atau lag.
+inputs:
+  limit:
+    type: int
+    default: 10
+steps:
+  - id: overview
+    tool: system.get_overview
+  - id: cpu
+    tool: system.get_cpu
+  - id: memory
+    tool: system.get_memory
+  - id: disks
+    tool: system.get_disks
+  - id: top_cpu
+    tool: process.list_top
+    args:
+      sort_by: "cpu"
+      limit: "{limit}"
+  - id: top_ram
+    tool: process.list_top
+    args:
+      sort_by: "memory"
+      limit: "{limit}"
+  - id: startup
+    tool: startup.list_items
+  - id: disk_activity
+    tool: system.get_disk_activity
+    args:
+      sample_seconds: 2
+    optional: true
+rules:
+  - if: "cpu.data.get('percent_total', 0) > 85"
+    finding: "Penggunaan prosesor (CPU) sangat tinggi (>85%), periksa daftar proses teratas."
+  - if: "cpu.data.get('throttling_suspected', False)"
+    finding: "Indikasi thermal throttling: Frekuensi clock CPU berjalan di bawah base clock karena suhu panas atau profil hemat daya."
+  - if: "memory.data.get('percent_used', 0) > 85"
+    finding: "Penggunaan RAM sangat tinggi (>85%), sistem kekurangan RAM fisik dan mengandalkan swap file pada disk."
+  - if: "startup.data.get('count', 0) > 15"
+    finding: "Terdapat banyak aplikasi berjalan otomatis saat startup (>15 item), memperlambat booting dan memakan RAM latar belakang."
+explain: true

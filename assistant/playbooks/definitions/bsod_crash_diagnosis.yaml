@@ -1,0 +1,52 @@
+name: bsod_crash_diagnosis
+description: Menganalisis penyebab komputer crash, BSOD (Blue Screen of Death), atau mati mendadak.
+inputs:
+  days:
+    type: int
+    default: 14
+steps:
+  - id: events
+    tool: events.get_crash_summary
+    args:
+      days: "{days}"
+  - id: dump_config
+    tool: dumps.get_config
+  - id: dumps
+    tool: dumps.list
+    elevated: true
+    optional: true
+  - id: analyze_latest
+    tool: dumps.analyze
+    when: "dumps.data.count > 0"
+    args:
+      file_path: "{dumps.data.latest}"
+    elevated: true
+    optional: true
+  - id: lookup
+    tool: bugcheck.lookup
+    when: "bool(events.data.bugcheck_codes)"
+    args:
+      code: "{events.data.bugcheck_codes[0]}"
+    optional: true
+  - id: updates
+    tool: system.get_updates_history
+    args:
+      days: "{days}"
+    optional: true
+  - id: reliability
+    tool: reliability.get_records
+    args:
+      days: "{days}"
+    optional: true
+rules:
+  - if: "events.data.kernel_power_41_count > 0 and not events.data.bugcheck_codes"
+    finding: "Mati mendadak (Kernel-Power 41) tanpa kode bugcheck: Kemungkinan besar masalah suplai daya listrik (PSU/baterai), laptop mati karena overheating ekstrem, atau freeze mendadak bukan driver BSOD."
+  - if: "events.data.whea_hardware_error_count > 0"
+    finding: "Terdeteksi hardware error (WHEA): Kemungkinan kerusakan fisik hardware pada CPU, RAM, atau storage NVMe SSD/SATA."
+  - if: "events.data.display_tdr_count > 0"
+    finding: "Driver kartu grafis / GPU mengalami crash dan timeout (TDR 4101): Kemungkinan driver VGA korup, overheat GPU, atau clock tidak stabil."
+  - if: "dump_config.data.Enabled == false"
+    finding: "Fitur pembuatan crash dump nonaktif di Windows, sehingga file minidump tidak terbentuk."
+optional_web_research:
+  query_template: "{bugcheck_name} {probable_driver} Windows"
+explain: true

@@ -119,14 +119,30 @@ class Orchestrator:
                 }
 
         elif decision.decision_type == "playbook":
-            # Playbook execution will be wired in Phase 4
-            return {
-                "route": "llm",
-                "type": "playbook",
-                "playbook": decision.playbook,
-                "response": f"Menyiapkan playbook diagnosa '{decision.playbook}' untuk menganalisis masalah ini...",
-                "ok": True,
-            }
+            from assistant.playbooks.engine import playbook_engine
+
+            playbook_res = playbook_engine.run(decision.playbook, decision.args)
+            if playbook_res.ok:
+                explanation = self.explainer.explain(user_query, playbook_res.summary)
+                return {
+                    "route": "llm",
+                    "type": "playbook",
+                    "playbook": decision.playbook,
+                    "response": explanation,
+                    "findings": playbook_res.summary,
+                    "rule_findings": playbook_res.rule_findings,
+                    "data": playbook_res.data,
+                    "ok": True,
+                }
+            else:
+                return {
+                    "route": "llm",
+                    "type": "playbook",
+                    "playbook": decision.playbook,
+                    "response": f"Playbook '{decision.playbook}' gagal dijalankan: {playbook_res.summary}",
+                    "findings": playbook_res.summary,
+                    "ok": False,
+                }
 
         elif decision.decision_type == "answer":
             return {

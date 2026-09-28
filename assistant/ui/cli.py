@@ -80,22 +80,73 @@ def cmd_tool(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
+def cmd_playbook(args: argparse.Namespace) -> None:
+    """Execute a diagnostic playbook directly."""
+    from assistant.playbooks.engine import playbook_engine
+
+    if not args.name or args.name == "list":
+        playbooks = playbook_engine.list_playbooks()
+        print(f"\nAvailable Playbooks ({len(playbooks)}):")
+        print("-" * 75)
+        for pb_name in sorted(playbooks):
+            pb = playbook_engine.get(pb_name)
+            desc = pb.description if pb else ""
+            print(f"- {pb_name:<25} | {desc}")
+        print("-" * 75)
+        return
+
+    pb_args = {}
+    if args.json_args:
+        try:
+            pb_args = json.loads(args.json_args)
+        except json.JSONDecodeError as jde:
+            print(f"[ERROR] Invalid JSON in --json-args: {jde}", file=sys.stderr)
+            sys.exit(1)
+    elif args.params:
+        pb_args = parse_kwarg_pairs(args.params)
+
+    print(f"\n[MENJALANKAN PLAYBOOK: {args.name}]...")
+    res = playbook_engine.run(args.name, pb_args)
+
+    if res.ok:
+        print(f"\n[OK] Playbook '{args.name}' selesai.")
+        print("=" * 60)
+        print(res.summary)
+        print("=" * 60)
+        if args.raw_json:
+            print("\n[Structured Data]:")
+            print(json.dumps(res.data, indent=2, default=str))
+    else:
+        print(f"\n[FAIL] Playbook '{args.name}' gagal: {res.summary}", file=sys.stderr)
+        sys.exit(1)
+
+
 def cmd_ask(args: argparse.Namespace) -> None:
-    """Handle natural language command via the Fast-Path Intent Router."""
+    """Handle natural language command via Orchestrator (Fast-Path -> LLM/Playbook)."""
     query = " ".join(args.text).strip()
     if not query:
         print("[ERROR] Masukkan perintah. Contoh: assistant ask 'buka youtube'", file=sys.stderr)
         sys.exit(1)
 
-    route_res = intent_router.route(query)
-    if route_res.matched:
-        print(f"\n[FAST PATH: {route_res.intent}]")
-        print(f"Tool: {route_res.tool_name}")
+    res = orchestrator.handle_request(query)
+    route = res.get("route", "unknown")
+
+    if route == "fast":
+        print(f"\n[FAST PATH: {res.get('intent')}]")
+        print(f"Tool: {res.get('tool')}")
         print("-" * 60)
-        print(route_res.message)
+        print(res.get("response"))
         print("-" * 60)
     else:
-        print(f"\n[UNMATCHED] {route_res.message}")
+        res_type = res.get("type", "response")
+        print(f"\n[ANALYSIS PATH: {res_type.upper()}]")
+        if res.get("playbook"):
+            print(f"Playbook: {res.get('playbook')}")
+        elif res.get("tool"):
+            print(f"Tool: {res.get('tool')}")
+        print("-" * 60)
+        print(res.get("response"))
+        print("-" * 60)
 
 
 def cmd_audit(args: argparse.Namespace) -> None:
@@ -162,8 +213,14 @@ def cmd_repl() -> None:
             )
             continue
 
+        # Check if first word is 'playbook'
+        if parts[0] == "playbook":
+            pb_name = parts[1] if len(parts) > 1 else "list"
+            pb_params = parse_kwarg_pairs(parts[2:]) if len(parts) > 2 else {}
+            cmd_playbook(argparse.Namespace(name=pb_name, params=[], json_args=None, raw_json=False))
+            continue
+
         # Check if first word is a direct tool name
-        parts = line.split()
         if registry.get(parts[0]):
             params = parse_kwarg_pairs(parts[1:])
             res = orchestrator.run_tool(parts[0], params)
@@ -173,12 +230,16 @@ def cmd_repl() -> None:
                 print(f"\n[ERROR] {res.error}")
             continue
 
-        # Otherwise, process through Fast-Path Intent Router
-        route_res = intent_router.route(line)
-        if route_res.matched:
-            print(f"\n[FAST PATH: {route_res.intent}] {route_res.message}")
+        # Otherwise, process through full Orchestrator (Fast-Path -> LLM/Playbook)
+        res = orchestrator.handle_request(line)
+        route = res.get("route", "unknown")
+        if route == "fast":
+            print(f"\n[FAST PATH: {res.get('intent')}] {res.get('response')}")
         else:
-            print(f"\n[INFO] {route_res.message}")
+            print(f"\n[ANALYSIS: {res.get('type', 'response').upper()}]")
+            if res.get("playbook"):
+                print(f"Playbook: {res.get('playbook')}")
+            print(res.get("response"))
 
 
 def main() -> None:
@@ -191,6 +252,13 @@ def main() -> None:
     # 'ask' command
     ask_parser = subparsers.add_parser("ask", help="Send a natural language command")
     ask_parser.add_argument("text", nargs="+", help="Natural language query")
+
+    # 'playbook' command
+    playbook_parser = subparsers.add_parser("playbook", help="Execute or list diagnostic playbooks")
+    playbook_parser.add_argument("name", nargs="?", default="list", help="Playbook name to execute (or 'list')")
+    playbook_parser.add_argument("params", nargs="*", help="Optional key=value parameters")
+    playbook_parser.add_argument("--json-args", dest="json_args", help="Arguments formatted as a JSON object string")
+    playbook_parser.add_argument("--json", dest="raw_json", action="store_true", help="Print full structured data as JSON")
 
     # 'tool' command
     tool_parser = subparsers.add_parser("tool", help="Execute a specific tool")
@@ -212,6 +280,8 @@ def main() -> None:
         cmd_list(args)
     elif args.command == "ask":
         cmd_ask(args)
+    elif args.command == "playbook":
+        cmd_playbook(args)
     elif args.command == "tool":
         cmd_tool(args)
     elif args.command == "audit":

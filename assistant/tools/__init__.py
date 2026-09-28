@@ -19,6 +19,17 @@ from assistant.tools.launch.browser import open_url, web_search, youtube_search,
 from assistant.tools.launch.app_launcher import open_app
 from assistant.tools.launch.folder_launcher import open_folder
 
+# Phase 4 tools
+from assistant.tools.dumps.bugcheck_table import bugcheck_lookup
+from assistant.tools.dumps.dump_tools import (
+    get_dump_config,
+    list_dumps,
+    analyze_dump,
+    get_updates_history,
+    get_reliability_records,
+)
+from assistant.tools.events.event_query import events_query, get_crash_summary
+
 # Register all tools
 for tool_def in [
     # System observation (L1)
@@ -39,6 +50,15 @@ for tool_def in [
     update_site_alias,
     open_app,
     open_folder,
+    # Phase 4 Diagnostics (L1 / L2)
+    bugcheck_lookup,
+    get_dump_config,
+    list_dumps,
+    analyze_dump,
+    get_updates_history,
+    get_reliability_records,
+    events_query,
+    get_crash_summary,
 ]:
     # Prevent duplicate registration if reloaded
     if registry.get(tool_def.name) is None:

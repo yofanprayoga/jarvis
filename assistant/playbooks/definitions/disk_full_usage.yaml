@@ -1,0 +1,33 @@
+name: disk_full_usage
+description: Menganalisis penyebab penggunaan disk 100% (disk bottleneck) atau kapasitas penyimpanan penuh.
+inputs:
+  sample_seconds:
+    type: int
+    default: 2
+steps:
+  - id: disks
+    tool: system.get_disks
+  - id: disk_activity
+    tool: system.get_disk_activity
+    args:
+      sample_seconds: "{sample_seconds}"
+  - id: top_io
+    tool: process.list_top
+    args:
+      sort_by: "disk"
+      limit: 10
+  - id: memory
+    tool: system.get_memory
+  - id: crash_summary
+    tool: events.get_crash_summary
+    args:
+      days: 7
+    optional: true
+rules:
+  - if: "any(d.get('percent_free', 100) < 10 for d in disks.data.get('disks', []))"
+    finding: "Kapasitas partisi penyimpanan tersisa di bawah 10%, yang dapat memperlambat kinerja sistem dan alokasi virtual memory Windows."
+  - if: "memory.data.get('percent_used', 0) > 85"
+    finding: "Penggunaan RAM sangat tinggi (>85%), memicu Windows melakukan paging intensif ke storage (Hard Page Faults) sehingga utilisasi disk melonjak 100%."
+  - if: "crash_summary.data.disk_io_error_count > 0"
+    finding: "Terdeteksi error I/O disk atau controller storage pada Event Log (Event 7/51/153/129): Menandakan potensi masalah koneksi drive atau bad sector storage."
+explain: true

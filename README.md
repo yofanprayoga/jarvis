@@ -16,7 +16,7 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 - [x] **Phase 1:** Foundation & Read-only System Tools (Completed)
 - [x] **Phase 2:** Fast Path & Intent Router (Completed)
 - [x] **Phase 3:** Local LLM Integration & Evaluation Suite (Completed)
-- [ ] **Phase 4:** Diagnostics Playbooks (BSOD, Crashes, Disk 100%)
+- [x] **Phase 4:** Diagnostics Playbooks (BSOD, Crashes, Disk 100%) (Completed)
 - [ ] **Phase 5:** Tray UI & Background Mode
 - [ ] **Phase 6:** Web Research Pipeline
 - [ ] **Phase 7:** Game & App Investigation
@@ -26,26 +26,28 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 - [ ] **Phase 11:** Voice (Mic standby / Push-to-Talk + Piper TTS)
 - [ ] **Phase 12:** Cloud LLM & Extensions
 
-## Quick Start (Phase 1 CLI)
+## Quick Start (CLI & Playbooks)
 
-Activate the local environment and run tools:
+Activate the local environment and run tools or playbooks:
 ```powershell
-# List all 10 registered tools
+# List all 24 registered tools
 .\.venv\Scripts\python.exe -m assistant list
 
-# Run a specific tool (e.g., system overview, disk health, memory)
-.\.venv\Scripts\python.exe -m assistant tool system.get_overview
-.\.venv\Scripts\python.exe -m assistant tool system.get_cpu interval_s=0.5
-.\.venv\Scripts\python.exe -m assistant tool system.get_memory
-.\.venv\Scripts\python.exe -m assistant tool system.get_disks
-.\.venv\Scripts\python.exe -m assistant tool process.list_top by=memory count=5
+# List available diagnostic playbooks
+.\.venv\Scripts\python.exe -m assistant playbook list
 
-# Fast Path (Jalur Cepat < 1 detik)
+# Run a diagnostic playbook directly
+.\.venv\Scripts\python.exe -m assistant playbook bsod_crash_diagnosis
+.\.venv\Scripts\python.exe -m assistant playbook disk_full_usage
+.\.venv\Scripts\python.exe -m assistant playbook system_slowness
+.\.venv\Scripts\python.exe -m assistant playbook app_crash_diagnosis
+
+# Natural Language Commands (Fast Path & Analysis Path with Playbooks)
 .\.venv\Scripts\python.exe -m assistant ask "buka kuramanime"
-.\.venv\Scripts\python.exe -m assistant ask "buka web idlix dong"
 .\.venv\Scripts\python.exe -m assistant ask "cari lofi di youtube"
-.\.venv\Scripts\python.exe -m assistant ask "buka folder download"
-.\.venv\Scripts\python.exe -m assistant ask "update kuramanime https://v21.kuramanime.ing/"
+.\.venv\Scripts\python.exe -m assistant ask "semalem laptop tiba2 layar biru, kenapa ya"
+.\.venv\Scripts\python.exe -m assistant ask "disk gw 100% terus nih"
+.\.venv\Scripts\python.exe -m assistant ask "laptop lemot banget kenapa ya"
 
 # View recent SQLite audit logs
 .\.venv\Scripts\python.exe -m assistant audit --limit 10
@@ -56,7 +58,7 @@ Activate the local environment and run tools:
 
 ## Running Tests & Benchmark Evaluation
 ```powershell
-# Run unit tests (37 tests)
+# Run unit tests (49 tests)
 .\.venv\Scripts\python.exe -m unittest discover tests
 
 # Run benchmark evaluation suite (30 test prompts, route & target accuracy)

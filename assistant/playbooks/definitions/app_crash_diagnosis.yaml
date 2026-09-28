@@ -1,0 +1,40 @@
+name: app_crash_diagnosis
+description: Menganalisis penyebab aplikasi sering crash, force close, atau Not Responding (Hang).
+inputs:
+  days:
+    type: int
+    default: 14
+  app_name:
+    type: str
+    default: ""
+steps:
+  - id: app_events
+    tool: events.query
+    args:
+      log_name: "Application"
+      event_ids: [1000, 1002]
+      days: "{days}"
+      max_count: 20
+  - id: crash_summary
+    tool: events.get_crash_summary
+    args:
+      days: "{days}"
+  - id: updates
+    tool: system.get_updates_history
+    args:
+      days: "{days}"
+    optional: true
+  - id: top_proc
+    tool: process.list_top
+    args:
+      sort_by: "cpu"
+      limit: 10
+    optional: true
+rules:
+  - if: "app_events.data.count > 0"
+    finding: "Ditemukan catatan aplikasi crash (Event 1000) atau hang (Event 1002) di Application Event Log."
+  - if: "crash_summary.data.app_hang_count > 0"
+    finding: "Beberapa aplikasi mengalami Not Responding (Hang / Event 1002), menandakan kemungkinan disk I/O bottleneck atau deadlock aplikasi."
+  - if: "crash_summary.data.display_tdr_count > 0"
+    finding: "Terjadi crash pada driver grafis (TDR) yang mungkin menjadi pemicu crash pada aplikasi game atau peramban browser."
+explain: true

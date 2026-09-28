@@ -7,7 +7,7 @@ from typing import Any, Optional
 
 from assistant.tools.web.search_provider import SearchProvider, SearchResult, get_search_provider
 from assistant.tools.web.fetcher import WebFetcher, web_fetcher
-from assistant.llm import LLMClient, get_llm_client
+from assistant.llm.client import LLMClient
 
 
 class WebResearcher:
@@ -33,7 +33,11 @@ class WebResearcher:
     ) -> None:
         self.search_provider = search_provider or get_search_provider()
         self.fetcher = fetcher or web_fetcher
-        self.llm = llm or get_llm_client()
+        if llm is not None:
+            self.llm = llm
+        else:
+            from assistant.llm import get_llm_client
+            self.llm = get_llm_client()
 
     def rank_sources(self, results: list[SearchResult], top_n: int = 3) -> list[SearchResult]:
         """Rank results giving priority to official documentation and vendor domains."""

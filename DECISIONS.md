@@ -39,4 +39,6 @@ This log records architecture and design decisions, changes, and their rationale
 | 2026-09-28 | L0 Path Protection for Windows System Directories | Policy engine blocks modifications or deletions targeting `C:\Windows`, `C:\Boot`, `C:\Recovery`, and System32 as L0 (FORBIDDEN), preventing accidental or malicious corruption of OS core files. |
 | 2026-09-28 | Concurrency / Race Condition Guard via Expected Hash | `files.apply_edit` accepts an optional `expected_hash` parameter; if the file was modified on disk between the proposal and user confirmation, the modification is automatically aborted. |
 | 2026-09-28 | Mandatory Pre-Edit Backup & Auto-Rollback on Verification Failure | No file write occurs without a pre-existing hash-verified backup in `data/backups/`. If post-write integrity check fails, the original file is restored immediately. |
+| 2026-09-28 | Stabilization & Bugfix: LLM Circular Import, Ollama Fast Timeout & WMI Dates | Decoupled `assistant.llm` and `assistant.tools.web.researcher` imports; reduced Ollama healthcheck connect timeout to 0.8s for fast mock fallback; converted raw COM `/Date(...)` to human-readable ISO format (`YYYY-MM-DD [HH:MM:SS]`). |
+
 

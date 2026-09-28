@@ -5,8 +5,6 @@ from assistant.llm.client import LLMClient
 from assistant.llm.providers.mock import MockLLMClient
 from assistant.llm.providers.ollama import OllamaClient
 from assistant.llm.providers.openai_compat import OpenAICompatClient
-from assistant.llm.planner import LLMPlanner, PlannerDecision
-from assistant.llm.explainer import LLMExplainer
 
 
 def get_llm_client() -> LLMClient:
@@ -37,6 +35,13 @@ def get_llm_client() -> LLMClient:
         return MockLLMClient()
 
     return MockLLMClient()
+
+
+# Import planner and explainer after get_llm_client definition to avoid circular import
+# with modules in assistant.tools.web that import get_llm_client.
+from assistant.llm.planner import LLMPlanner, PlannerDecision
+from assistant.llm.explainer import LLMExplainer
+
 
 
 __all__ = [

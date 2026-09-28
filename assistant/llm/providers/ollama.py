@@ -25,9 +25,9 @@ class OllamaClient(LLMClient):
         self.timeout_s = timeout_s
 
     def is_healthy(self) -> bool:
-        """Check if Ollama server is running."""
+        """Check if Ollama server is running with fast connect timeout."""
         try:
-            with httpx.Client(timeout=3.0) as client:
+            with httpx.Client(timeout=httpx.Timeout(1.0, connect=0.8)) as client:
                 res = client.get(f"{self.base_url}/api/tags")
                 return res.status_code == 200
         except Exception:
@@ -84,7 +84,7 @@ class OllamaClient(LLMClient):
         }
 
         try:
-            with httpx.Client(timeout=self.timeout_s) as client:
+            with httpx.Client(timeout=httpx.Timeout(self.timeout_s, connect=2.0)) as client:
                 res = client.post(url, json=payload)
                 res.raise_for_status()
                 data = res.json()
@@ -119,7 +119,7 @@ class OllamaClient(LLMClient):
             payload["format"] = "json"
 
         try:
-            with httpx.Client(timeout=self.timeout_s) as client:
+            with httpx.Client(timeout=httpx.Timeout(self.timeout_s, connect=2.0)) as client:
                 res = client.post(url, json=payload)
                 res.raise_for_status()
                 raw_text = res.json().get("response", "").strip()

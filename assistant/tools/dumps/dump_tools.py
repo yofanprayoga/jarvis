@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import datetime
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -202,6 +204,24 @@ def analyze_dump(args: DumpAnalyzeInput) -> ToolResult:
         return ToolResult.fail(f"Gagal mengeksekusi cdb analysis: {e}")
 
 
+def format_wmi_datetime(raw_val: Any, date_only: bool = False) -> str:
+    """Format WMI / PowerShell /Date(timestamp)/ or datetime string to readable YYYY-MM-DD [HH:MM:SS]."""
+    if not raw_val:
+        return "Unknown"
+    s = str(raw_val).strip()
+    m = re.search(r"/Date\((\d+)(?:[+-]\d+)?\)/", s)
+    if m:
+        try:
+            ms = int(m.group(1))
+            dt = datetime.datetime.fromtimestamp(ms / 1000.0)
+            return dt.strftime("%Y-%m-%d") if date_only else dt.strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            pass
+    if date_only:
+        return s[:10] if len(s) >= 10 else s
+    return s[:19] if len(s) >= 19 else s
+
+
 @tool(
     name="system.get_updates_history",
     risk=Risk.OBSERVE,
@@ -229,14 +249,15 @@ def get_updates_history(args: UpdatesHistoryInput) -> ToolResult:
         for it in raw_list:
             if not isinstance(it, dict):
                 continue
-            inst_on = str(it.get("InstalledOn") or "Unknown")
-            if isinstance(it.get("InstalledOn"), dict) and "value" in it["InstalledOn"]:
-                inst_on = str(it["InstalledOn"]["value"])
+            inst_raw = it.get("InstalledOn")
+            if isinstance(inst_raw, dict) and "value" in inst_raw:
+                inst_raw = inst_raw["value"]
+            inst_on = format_wmi_datetime(inst_raw, date_only=True)
 
             updates.append({
                 "hotfix_id": str(it.get("HotFixID", "Unknown")),
                 "description": str(it.get("Description", "Update")),
-                "installed_on": inst_on[:10] if len(inst_on) >= 10 else inst_on,
+                "installed_on": inst_on,
             })
 
     lines = [f"- {u['hotfix_id']} ({u['description']}) on {u['installed_on']}" for u in updates[:8]]
@@ -276,10 +297,11 @@ def get_reliability_records(args: UpdatesHistoryInput) -> ToolResult:
         raw_list = ps_data if isinstance(ps_data, list) else [ps_data]
         for it in raw_list:
             if isinstance(it, dict) and it.get("SourceName"):
+                time_str = format_wmi_datetime(it.get("TimeGenerated"))
                 records.append({
                     "source": str(it.get("SourceName")),
                     "message": str(it.get("Message", ""))[:120],
-                    "time": str(it.get("TimeGenerated", ""))[:19],
+                    "time": time_str,
                 })
 
     lines = [f"- [{r['time']}] {r['source']}: {r['message'][:80]}" for r in records[:8]]
@@ -289,3 +311,4 @@ def get_reliability_records(args: UpdatesHistoryInput) -> ToolResult:
     )
 
     return ToolResult.success(data={"count": len(records), "records": records}, summary=summary)
+

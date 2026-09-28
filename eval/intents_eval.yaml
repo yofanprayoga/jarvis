@@ -1,0 +1,122 @@
+# Intent Evaluation Test Set (Section 14.2)
+# Mixed Indonesian and English, casual phrasing, typos included
+
+- input: "tolong bukain youtube dong"
+  expect_route: "fast"
+  expect_tool: "launch.open_url"
+
+- input: "buka kuramanime"
+  expect_route: "fast"
+  expect_tool: "launch.open_url"
+
+- input: "buka web idlix"
+  expect_route: "fast"
+  expect_tool: "launch.open_url"
+
+- input: "open google"
+  expect_route: "fast"
+  expect_tool: "launch.open_url"
+
+- input: "cari lofi hip hop di youtube"
+  expect_route: "fast"
+  expect_tool: "launch.youtube_search"
+
+- input: "search python tutorial on youtube"
+  expect_route: "fast"
+  expect_tool: "launch.youtube_search"
+
+- input: "putar lagu coldplay di youtube"
+  expect_route: "fast"
+  expect_tool: "launch.youtube_search"
+
+- input: "cari resep nasi goreng di google"
+  expect_route: "fast"
+  expect_tool: "launch.web_search"
+
+- input: "googling cara merawat kucing"
+  expect_route: "fast"
+  expect_tool: "launch.web_search"
+
+- input: "buka folder download"
+  expect_route: "fast"
+  expect_tool: "launch.open_folder"
+
+- input: "buka folder desktop"
+  expect_route: "fast"
+  expect_tool: "launch.open_folder"
+
+- input: "open folder documents"
+  expect_route: "fast"
+  expect_tool: "launch.open_folder"
+
+- input: "buka notepad"
+  expect_route: "fast"
+  expect_tool: "launch.open_app"
+
+- input: "open chrome"
+  expect_route: "fast"
+  expect_tool: "launch.open_app"
+
+- input: "buka kalkulator"
+  expect_route: "fast"
+  expect_tool: "launch.open_app"
+
+- input: "update kuramanime https://v21.kuramanime.ing/"
+  expect_route: "fast"
+  expect_tool: "launch.update_site"
+
+- input: "semalem laptop tiba2 layar biru, kenapa ya"
+  expect_route: "llm"
+  expect_playbook: "bsod_crash_diagnosis"
+
+- input: "kenapa tadi bsod?"
+  expect_route: "llm"
+  expect_playbook: "bsod_crash_diagnosis"
+
+- input: "why did my pc crash"
+  expect_route: "llm"
+  expect_playbook: "bsod_crash_diagnosis"
+
+- input: "disk gw 100% terus nih"
+  expect_route: "llm"
+  expect_playbook: "disk_full_usage"
+
+- input: "kenapa penyimpanan penuh dan lemot"
+  expect_route: "llm"
+  expect_playbook: "disk_full_usage"
+
+- input: "laptop lemot banget kenapa ya"
+  expect_route: "llm"
+  expect_playbook: "system_slowness"
+
+- input: "cek pemakaian ram sekarang"
+  expect_route: "llm"
+  expect_tool: "system.get_memory"
+
+- input: "cek memori laptop"
+  expect_route: "llm"
+  expect_tool: "system.get_memory"
+
+- input: "cek proses paling boros cpu"
+  expect_route: "llm"
+  expect_tool: "process.list_top"
+
+- input: "cek utilisasi cpu saat ini"
+  expect_route: "llm"
+  expect_tool: "system.get_cpu"
+
+- input: "cek suhu dan vga gpu"
+  expect_route: "llm"
+  expect_tool: "system.get_gpu_info"
+
+- input: "cek spek laptop ini"
+  expect_route: "llm"
+  expect_tool: "system.get_overview"
+
+- input: "cek spesifikasi sistem"
+  expect_route: "llm"
+  expect_tool: "system.get_overview"
+
+- input: "halo siapa kamu"
+  expect_route: "llm"
+  expect_type: "answer"

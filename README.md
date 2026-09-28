@@ -15,7 +15,7 @@ See [plan.md](file:///d:/project/jarvis/plan.md) for master implementation roadm
 - [x] **Phase 0:** Master Design & Concept
 - [x] **Phase 1:** Foundation & Read-only System Tools (Completed)
 - [x] **Phase 2:** Fast Path & Intent Router (Completed)
-- [ ] **Phase 3:** Local LLM Integration
+- [x] **Phase 3:** Local LLM Integration & Evaluation Suite (Completed)
 - [ ] **Phase 4:** Diagnostics Playbooks (BSOD, Crashes, Disk 100%)
 - [ ] **Phase 5:** Tray UI & Background Mode
 - [ ] **Phase 6:** Web Research Pipeline
@@ -54,7 +54,22 @@ Activate the local environment and run tools:
 .\.venv\Scripts\python.exe -m assistant
 ```
 
-## Running Tests
+## Running Tests & Benchmark Evaluation
 ```powershell
+# Run unit tests (37 tests)
 .\.venv\Scripts\python.exe -m unittest discover tests
+
+# Run benchmark evaluation suite (30 test prompts, route & target accuracy)
+.\.venv\Scripts\python.exe eval/run_eval.py
+```
+
+## Deploying to Target Laptop (Ruang Tamu)
+Untuk mengimplementasikan Jarvis di laptop target / ruang tamu:
+```powershell
+# 1. Clone repository di laptop target
+git clone https://github.com/yofanprayoga/jarvis.git
+cd jarvis
+
+# 2. Jalankan skrip setup otomatis
+.\scripts\setup_target.ps1
 ```

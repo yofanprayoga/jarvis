@@ -18,3 +18,7 @@ This log records architecture and design decisions, changes, and their rationale
 | 2026-09-28 | Dual-tier Site Manager (YAML seed + SQLite dynamic learning) | Solves changing mirror domains (e.g., Kuramanime, Idlix) by allowing dynamic updates saved into local SQLite. |
 | 2026-09-28 | Conversational filler word normalization | Robust pattern matching for natural Indonesian/English commands (tolong, dong, coba, please) while preserving URL dots. |
 | 2026-09-28 | Start Menu and App Paths indexing | Discovers installed user applications via `.lnk` files without hardcoding absolute paths. |
+| 2026-09-28 | Phase 3 completed: Local LLM Integration & Evaluation Suite | Connected structured JSON planner, explainer, tool selector, and 30-case evaluation suite (100% accuracy). |
+| 2026-09-28 | Tri-Provider LLM abstraction (Ollama, OpenAI-compat, Mock) | Supports local Ollama with `keep_alive`, OpenAI-compatible servers, and instant offline dev/test execution without heavy GPU/RAM requirements. |
+| 2026-09-28 | Keyword Tool Selector for Prompt Optimization | Sends only 3–5 relevant tool schemas per request to keep CPU inference fast on i5-8250U. |
+| 2026-09-28 | Automated Target Laptop Deployment Script (`scripts/setup_target.ps1`) | Separates dev workstation development from living-room target laptop with 1-click deployment. |

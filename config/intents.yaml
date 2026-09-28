@@ -34,6 +34,8 @@
     - "buka website {site}"
     - "open website {site}"
     - "open web {site}"
+    - "bukain web {site}"
+    - "bukain {site}"
     - "buka {site}"
     - "open {site}"
   resolve:
